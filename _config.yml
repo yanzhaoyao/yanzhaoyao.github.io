@@ -8,9 +8,10 @@ subtitle:
 description:
 keywords:
 author: ZhaoYao Yan
-language:
+language: zh-Hans
 timezone:
-avatar: https://github.com/yanzhaoyao/yanzhaoyao.github.io/blob/master/img/avatar/default.png  # 头像的URL
+# 头像的URL
+avatar: /img/avatar/default.png
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
@@ -75,6 +76,25 @@ pagination_dir: page
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: yilia
+
+jsonContent:
+    meta: false
+    pages: false
+    posts:
+      title: true
+      date: true
+      path: true
+      text: false
+      raw: false
+      content: false
+      slug: false
+      updated: false
+      comments: false
+      link: false
+      permalink: false
+      excerpt: false
+      categories: false
+      tags: true
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
