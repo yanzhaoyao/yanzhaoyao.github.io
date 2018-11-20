@@ -3,13 +3,14 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: ZhaoYao Yan 的博客
 subtitle:
 description:
 keywords:
-author: John Doe
+author: ZhaoYao Yan
 language:
 timezone:
+avatar: https://github.com/yanzhaoyao/yanzhaoyao.github.io/blob/master/img/avatar/default.png  # 头像的URL
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
