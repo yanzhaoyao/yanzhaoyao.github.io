@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: ZhaoYao Yan 的博客
+title: Mr·Yan 的博客
 subtitle:
-description:
+description: 加油ヾ(◍°∇°◍)ﾉﾞ
 keywords:
-author: ZhaoYao Yan
+author: Mr·Yan
 language: zh-Hans
 timezone:
 # 头像的URL
@@ -75,26 +75,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: yilia
-
-jsonContent:
-    meta: false
-    pages: false
-    posts:
-      title: true
-      date: true
-      path: true
-      text: false
-      raw: false
-      content: false
-      slug: false
-      updated: false
-      comments: false
-      link: false
-      permalink: false
-      excerpt: false
-      categories: false
-      tags: true
+theme: next
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
