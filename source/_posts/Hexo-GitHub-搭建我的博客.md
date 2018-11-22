@@ -1,7 +1,9 @@
 ---
 title: Hexo GitHub 搭建我的博客
 date: 2018-11-20 23:08:15
-tags: 博客搭建
+tags: 
+  - 博客搭建 
+  - GitHub Pages
 ---
 
 # 一、前言
@@ -30,18 +32,18 @@ tags: 博客搭建
 
 在Github首页右上角头像左侧加号点选择 New repositor(新存储库)或[点击这里](https://github.com/new)进行创建一个仓库.
 
-![1542803416460](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542803416460.png)
+![1542803416460](1542803416460.png)
 
-![1542804875679](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542804875679.png)
+![1542804875679](1542804875679.png)
 
 ## 3、开启Github Pages
 
 进入设置
-![1542805084668](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542805084668.png)
+![1542805084668](1542805084668.png)
 
 找到这一块
 
-![1542805154912](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542805154912.png)
+![1542805154912](1542805154912.png)
 
 当你的仓库名为：用户名.github.io 之后默认开启Github Pages
 
@@ -106,7 +108,9 @@ hexo d == hexo deploy
 
 ## 添加主题
 
-我这里使用的主题是[next](http://theme-next.iissnan.com/)，为什么使用next，我参考了这个博文https://blog.csdn.net/u011475210/article/details/79023429，写的很好
+我这里使用的主题是[next](http://theme-next.iissnan.com/)，为什么使用next，我参考了[这个博文](https://blog.csdn.net/u011475210/article/details/79023429)
+
+写的很好
 
 ### 安装主题(next主题):
 
@@ -185,15 +189,15 @@ ssh-keygen -t rsa -C "邮件地址@youremail.com" #生成新的key文件,邮箱�
 
 进入[github首页](https://github.com/)
 
-![1542807916514](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542807916514.png)
+![1542807916514](1542807916514.png)
 
 添加SSH Key。
 
-![1542810809808](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542810809808.png)
+![1542810809808](1542810809808.png)
 
 找到 系统当前用户目录下(开启查看隐藏文件) C:\Users\用户名\ .ssh id_rsa.pub文件以文本方式打开。打开之后全部复制到key中
 
-![1542810923218](C:\Users\ZhaoYaoYan\AppData\Roaming\Typora\typora-user-images\1542810923218.png)
+![1542810923218](1542810923218.png)
 
 到了这就可以测试一下是否成功了:
 
@@ -219,7 +223,7 @@ hexo d
 
 到了这你以为就结束了吗？没有，还有坑没有给你们填好。
 
-# 六、最后的填坑
+# 六、最后的补充
 
 1. 电脑重装了系统/多台电脑写博客？那就赶紧戳这里[使用hexo，如果换了电脑怎么更新博客？](https://www.zhihu.com/question/21193762)
 2. 不知道如何编写Markdown语法？[Markdown——入门指南](http://www.jianshu.com/p/1e402922ee32/)
