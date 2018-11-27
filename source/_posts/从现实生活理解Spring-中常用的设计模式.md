@@ -10,11 +10,11 @@ typora-root-url: 从现实生活理解Spring-中常用的设计模式
 
 ## 1、我们通常说的 23 中经典设计模式可以通过下表一目了然：  
 
-| 分类   | 设计模式                                                     |
-| ------ | :----------------------------------------------------------- |
-| 创建型 | 工厂方法模式（Factory Method）、抽象工厂模式（Abstract Factory）、 <br/> 建造者模式（Builder）、原型模式（Prototype）、单例模式(Singleton) |
-| 结构型 | 适配器模式(Adapter)、桥接模式（Bridge）、组合模式（Composite）、<br/>装饰器模式（Decorator）、门面(外观)模式（Facade）、享元模式（Flyweight）、<br/>代理模式（Proxy） |
-| 行为型 | 解释器模式（Interpreter）、模板方法模式（Template Method）、<br/>责任链模式（Chain of Responsibility）、命令模式（Command）、<br/>迭代器模式（Iterator）、调解(中介)者模式（Mediator）、备忘录模式（Memento）、<br/>观察者模式（Observer）、状态模式（State）、策略模式（Strategy）、<br/>访问者模式（Visitor） |
+| 分类                                                         | 设计模式                                                     |
+| ------------------------------------------------------------ | :----------------------------------------------------------- |
+| **创建型**<br/>这些设计模式提供了一种在创建对象的同时隐藏创建逻辑的方式，而不是使用 new 运算符直接实例化对象。这使得程序在判断针对某个给定实例需要创建哪些对象时更加灵活。 | 工厂方法模式（Factory Method）<br/>抽象工厂模式（Abstract Factory）<br/>建造者模式（Builder）<br/>原型模式（Prototype）<br/>单例模式(Singleton) |
+| **结构型**<br/>这些设计模式关注类和对象的组合。继承的概念被用来组合接口和定义组合对象获得新功能的方式。 | 适配器模式(Adapter)<br/>桥接模式（Bridge）<br/>组合模式（Composite）<br/>装饰器模式（Decorator）<br/>门面(外观)模式（Facade）<br/>享元模式（Flyweight）<br/>代理模式（Proxy） |
+| **行为型**<br/>这些设计模式特别关注对象之间的通信。          | 解释器模式（Interpreter）<br/>模板方法模式（Template Method）<br/>责任链模式（Chain of Responsibility）<br/>命令模式（Command）<br/>迭代器模式（Iterator）<br/>调解(中介)者模式（Mediator）<br/>备忘录模式（Memento）<br/>观察者模式（Observer）<br/>状态模式（State）<br/>策略模式（Strategy）<br/>访问者模式（Visitor） |
 
 通常来说，设计模式都是混合使用，不会独立应用。利用穷举法充分理解设计模式的应用场景。在平时的应用中，不是用设计模式去生搬硬套，而是根据具体业务问题需要时借鉴。
 
