@@ -3,7 +3,6 @@ title: 从现实生活理解Spring 中常用的设计模式
 date: 2018-11-22 22:25:27
 tags: 设计模式
 categories: 设计模式
-typora-root-url: 从现实生活理解Spring-中常用的设计模式
 ---
 
 # Spring 中常用的设计模式  
