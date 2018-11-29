@@ -1,9 +1,10 @@
 ---
 
-title: 设计模式（一）--工厂模式（Factory）
+title: 设计模式（一）--工厂模式（Factory Pattern）
 date: 2018-11-23 22:33:33
 tags: 设计模式
 categories: 设计模式
+typora-root-url: 设计模式（一）-工厂模式（Factory Pattern）
 ---
 
 [TOC]
@@ -35,6 +36,8 @@ categories: 设计模式
 # 3. 实现
 假定我们现在要实现一个发布最新款式手机的功能，包含各种品牌（Iphone、HUAWEI、Vivo）等
 
+![FactoryPattern](/FactoryPattern.png)
+
 ### 步骤 1 创建一个接口:
 
 ```java
@@ -56,7 +59,7 @@ public interface IMobilePhone {
 ```java
 /**
  * @description
- * @auther Administrator
+ * @auther yanzhoyao
  * @date 2018/11/27 21:05
  */
 public class HUAWEI implements IMobilePhone {
@@ -73,7 +76,7 @@ public class HUAWEI implements IMobilePhone {
 ```java
 /**
  * @description
- * @auther Administrator
+ * @auther yanzhaoyao
  * @date 2018/11/27 21:06
  */
 public class Iphone implements IMobilePhone {
@@ -89,7 +92,7 @@ public class Iphone implements IMobilePhone {
 ```java
 /**
  * @description
- * @auther Administrator
+ * @auther yanzhaoyao
  * @date 2018/11/27 21:06
  */
 public class Vivo implements IMobilePhone {
@@ -107,12 +110,12 @@ public class Vivo implements IMobilePhone {
 ```java
 /**
  * @description 手机工厂类
- * @auther Administrator
+ * @auther yanzhaoyao
  * @date 2018/11/27 21:10
  */
 public class PhoneFactory {
 
-    public IMobilePhone getIphone(String trademaek){
+    public IMobilePhone getPhone(String trademaek){
         if(trademaek == null){
             return null;
         }
@@ -138,7 +141,7 @@ public class PhoneFactory {
 ```java
 /**
  * @description
- * @auther Administrator
+ * @auther yanzhaoyao
  * @date 2018/11/27 21:15
  */
 public class FactoryPatternDemo {
@@ -146,15 +149,15 @@ public class FactoryPatternDemo {
         PhoneFactory phoneFactory = new PhoneFactory();
 
         //获取iphone对象，并发布手机publish（）
-        IMobilePhone iphone = phoneFactory.getIphone("iphone");
+        IMobilePhone iphone = phoneFactory.getPhone("iphone");
         iphone.publish();
 
         //获取huawei对象，并发布手机publish（）
-        IMobilePhone huawei = phoneFactory.getIphone("huawei");
+        IMobilePhone huawei = phoneFactory.getPhone("huawei");
         huawei.publish();
 
         //获取huawei对象，并发布手机publish（）
-        IMobilePhone vivo = phoneFactory.getIphone("vivo");
+        IMobilePhone vivo = phoneFactory.getPhone("vivo");
         vivo.publish();
     }
 }
