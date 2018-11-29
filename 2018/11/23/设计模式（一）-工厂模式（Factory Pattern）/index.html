@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="设计模式,">
 
 
 
@@ -79,18 +79,20 @@
 
 
 
-<meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
-<meta name="keywords" content="燕兆耀 yanzhaoyao">
+<meta name="description" content="[TOC] 1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 2. 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主">
+<meta name="keywords" content="设计模式">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://yoursite.com/2018/11/20/hello-world/index.html">
+<meta property="og:title" content="设计模式（一）--工厂模式（Factory Pattern）">
+<meta property="og:url" content="http://yoursite.com/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/index.html">
 <meta property="og:site_name" content="燕兆耀的博客">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="[TOC] 1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 2. 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-11-25T08:18:05.525Z">
+<meta property="og:image" content="http://yoursite.com/2018/11/23/设计模式（一）-工厂模式（Factory%20Pattern）/FactoryPattern.png">
+<meta property="og:updated_time" content="2018-11-29T14:20:01.370Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta name="twitter:title" content="设计模式（一）--工厂模式（Factory Pattern）">
+<meta name="twitter:description" content="[TOC] 1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 2. 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主">
+<meta name="twitter:image" content="http://yoursite.com/2018/11/23/设计模式（一）-工厂模式（Factory%20Pattern）/FactoryPattern.png">
 
 
 
@@ -120,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/11/20/hello-world/">
+  <link rel="canonical" href="http://yoursite.com/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/">
 
 
 
 
 
-  <title>Hello World | 燕兆耀的博客</title>
+  <title>设计模式（一）--工厂模式（Factory Pattern） | 燕兆耀的博客</title>
   
 
 
@@ -295,7 +297,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/20/hello-world/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="燕兆耀">
@@ -312,7 +314,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Hello World</h1>
+          <h1 class="post-title" itemprop="name headline">设计模式（一）--工厂模式（Factory Pattern）</h1>
         
 
         <div class="post-meta">
@@ -324,8 +326,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-20T21:08:15+08:00">
-                2018-11-20
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-23T22:33:33+08:00">
+                2018-11-23
               </time>
             
 
@@ -334,6 +336,28 @@
             
           </span>
 
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/设计模式/" itemprop="url" rel="index">
+                    <span itemprop="name">设计模式</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -367,15 +391,43 @@
       
 
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+        <p>[TOC]</p>
+<h1 id="1-工厂模式"><a href="#1-工厂模式" class="headerlink" title="1. 工厂模式"></a>1. 工厂模式</h1><p>工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
+<p>在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。</p>
+<h1 id="2-介绍"><a href="#2-介绍" class="headerlink" title="2. 介绍"></a>2. 介绍</h1><ul>
+<li><p><strong>意图：</strong>定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。</p>
+</li>
+<li><p><strong>主要解决：</strong>主要解决接口选择的问题。</p>
+</li>
+<li><p><strong>何时使用：</strong>我们明确地计划不同条件下创建不同实例时。</p>
+</li>
+<li><p><strong>如何解决：</strong>让其子类实现工厂接口，返回的也是一个抽象的产品。</p>
+</li>
+<li><p><strong>关键代码：</strong>创建过程在其子类执行。</p>
+</li>
+<li><p><strong>应用实例：</strong> 1、您需要一辆汽车，可以直接从工厂里面提货，而不用去管这辆汽车是怎么做出来的，以及这个汽车里面的具体实现。 2、Hibernate 换数据库只需换方言和驱动就可以。</p>
+</li>
+<li><p><strong>使用场景：</strong> 1、日志记录器：记录可能记录到本地硬盘、系统事件、远程服务器等，用户可以选择记录日志到什么地方。 2、数据库访问，当用户不知道最后系统采用哪一类数据库，以及数据库可能有变化时。 3、设计一个连接服务器的框架，需要三个协议，”POP3”、”IMAP”、”HTTP”，可以把这三个作为产品类，共同实现一个接口。</p>
+</li>
+<li><p><strong>注意事项：</strong>作为一种创建类模式，在任何需要生成复杂对象的地方，都可以使用工厂方法模式。有一点需要注意的地方就是复杂对象适合使用工厂模式，而简单对象，特别是只需要通过 new 就可以完成创建的对象，无需使用工厂模式。如果使用工厂模式，就需要引入一个工厂类，会增加系统的复杂度。</p>
+</li>
+</ul>
+<h1 id="3-实现"><a href="#3-实现" class="headerlink" title="3. 实现"></a>3. 实现</h1><p>假定我们现在要实现一个发布最新款式手机的功能，包含各种品牌（Iphone、HUAWEI、Vivo）等</p>
+<p><img src="/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/FactoryPattern.png" alt="FactoryPattern"></p>
+<h3 id="步骤-1-创建一个接口"><a href="#步骤-1-创建一个接口" class="headerlink" title="步骤 1 创建一个接口:"></a>步骤 1 创建一个接口:</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 手机接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  发布手机</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="步骤-2-创建实现接口的实体类。"><a href="#步骤-2-创建实现接口的实体类。" class="headerlink" title="步骤 2 创建实现接口的实体类。"></a>步骤 2 创建实现接口的实体类。</h3><p><strong>HUAWEI.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:05</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HUAWEI</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：HUAWEI Mate 20"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Iphone.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:06</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Iphone</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：Iphone XS"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>Vivo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:06</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Vivo</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：vivo X23"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。"><a href="#步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。" class="headerlink" title="步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。"></a>步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。</h3><p><strong>PhoneFactory.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 手机工厂类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:10</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneFactory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhone <span class="title">getPhone</span><span class="params">(String trademaek)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(trademaek == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"iphone"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Iphone();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"huawei"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> HUAWEI();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"vivo"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Vivo();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。"><a href="#步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。" class="headerlink" title="步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。"></a>步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。</h3><p><strong>FactoryPatternDemo.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:15</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FactoryPatternDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        PhoneFactory phoneFactory = <span class="keyword">new</span> PhoneFactory();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone iphone = phoneFactory.getPhone(<span class="string">"iphone"</span>);</span><br><span class="line">        iphone.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone huawei = phoneFactory.getPhone(<span class="string">"huawei"</span>);</span><br><span class="line">        huawei.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone vivo = phoneFactory.getPhone(<span class="string">"vivo"</span>);</span><br><span class="line">        vivo.publish();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="步骤-5-执行程序，输出结果："><a href="#步骤-5-执行程序，输出结果：" class="headerlink" title="步骤 5 执行程序，输出结果："></a>步骤 5 执行程序，输出结果：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate 20</span><br><span class="line">发布：vivo X23</span><br></pre></td></tr></table></figure>
+<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4. 总结"></a>4. 总结</h1><p><strong>优点：</strong> 1、一个调用者想创建一个对象，只要知道其名称就可以了。 2、扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。 3、屏蔽产品的具体实现，调用者只关心产品的接口。</p>
+<p><strong>缺点：</strong>每次增加一个产品时（比如添加一个OPPO手机发布），都需要增加一个具体类（<strong>OPPO.java</strong>）和修改对象实现工厂（<strong>PhoneFactory.java</strong>），使得系统中类的个数成倍增加，在一定程度上增加了系统的复杂度，同时也增加了系统具体类的依赖。违反了开闭原则，这并不是什么好事。</p>
 
       
     </div>
@@ -391,6 +443,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/设计模式/" rel="tag"># 设计模式</a>
+          
+        </div>
+      
 
       
       
@@ -400,14 +458,18 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2018/11/22/从现实生活理解Spring-中常用的设计模式/" rel="next" title="从现实生活理解Spring 中常用的设计模式">
+                <i class="fa fa-chevron-left"></i> 从现实生活理解Spring 中常用的设计模式
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/11/20/Hexo-GitHub-搭建我的博客/" rel="prev" title="Hexo GitHub 搭建我的博客">
-                Hexo GitHub 搭建我的博客 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/11/23/设计模式（二）-抽象工厂模式（Abstract Factory Pattern）/" rel="prev" title="设计模式（二）--抽象工厂模式（Abstract Factory Pattern）">
+                设计模式（二）--抽象工厂模式（Abstract Factory Pattern） <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -547,7 +609,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-text">Quick Start</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-new-post"><span class="nav-text">Create a new post</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Run-server"><span class="nav-text">Run server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generate-static-files"><span class="nav-text">Generate static files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy-to-remote-sites"><span class="nav-text">Deploy to remote sites</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-工厂模式"><span class="nav-text">1. 工厂模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-介绍"><span class="nav-text">2. 介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-实现"><span class="nav-text">3. 实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-1-创建一个接口"><span class="nav-text">步骤 1 创建一个接口:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-2-创建实现接口的实体类。"><span class="nav-text">步骤 2 创建实现接口的实体类。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。"><span class="nav-text">步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。"><span class="nav-text">步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-5-执行程序，输出结果："><span class="nav-text">步骤 5 执行程序，输出结果：</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#4-总结"><span class="nav-text">4. 总结</span></a></li></div>
             
 
           </div>
