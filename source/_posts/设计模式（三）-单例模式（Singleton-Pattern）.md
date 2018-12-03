@@ -397,9 +397,7 @@ public class RegSingletonTest {
 
 结果是线程安全的（ClassA是一个空类，里面什么也没有）
 
-https://www.cnblogs.com/twoheads/p/9723543.html
-
-源码在此//TODO
+注册登记式单例[参考这里](https://www.cnblogs.com/twoheads/p/9723543.html)
 
 # 三、测试各种方式的效率
 
@@ -460,4 +458,140 @@ public class EfficientTest {
 | 懒汉式（线程安全）     | 24844ms、30281ms、27018ms | 27381ms  | 这个就比较耗时了           |
 | 懒汉式（线程安全 DCL） | 790ms、1861ms、1198ms     | 1283ms   |                            |
 | 静态内部类式           | 750ms、386ms、479ms       | 538ms    |                            |
+
+# 反射和序列化都可以破坏单例
+
+## 反射
+
+```java
+/**
+ * @description 反射测试
+ * @auther yanzhaoyao
+ * @date 2018/12/2 22:41
+ */
+public class ReflactTest {
+    public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        // 正常测试
+        System.out.println(LazyDCL.getInstance());
+        System.out.println(LazyDCL.getInstance());
+
+        //反射测试
+        Class<?> lazyClass = LazyDCL.class;
+
+        //通过反射拿到私有的构造方法
+        Constructor c = lazyClass.getDeclaredConstructor(null);
+        //设置构造函数的访问权限，必须有
+        c.setAccessible(true);
+        System.out.println(c.newInstance());
+        System.out.println(c.newInstance());
+    }
+}
+```
+
+输出结果
+
+```
+com.yanzhaoyao.patter.singleton.lazy.Lazy@4554617c
+com.yanzhaoyao.patter.singleton.lazy.Lazy@4554617c
+com.yanzhaoyao.patter.singleton.lazy.Lazy@74a14482
+com.yanzhaoyao.patter.singleton.lazy.Lazy@1540e19d
+```
+
+破坏了单例，解决办法
+
+在调用构造方法时，先判断实例是否存在，如果已存在则不允许再创建新的对象
+
+```java
+//构造函数私有化，确保外界无法通过new 实例化
+private LazyDCL() {
+    synchronized (LazyDCL.class){
+        if(lazy != null){
+            throw new RuntimeException("单例已被侵犯");
+        }
+    }
+}
+```
+
+在此测试结果
+
+```java
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+Exception in thread "main" java.lang.reflect.InvocationTargetException
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at com.yanzhaoyao.patter.singleton.ReflactTest.main(ReflactTest.java:27)
+Caused by: java.lang.RuntimeException: 单例已被侵犯
+	at com.yanzhaoyao.patter.singleton.lazy.LazyDCL.<init>(LazyDCL.java:14)
+	... 5 more
+```
+
+## 反序列化
+
+```java
+/**
+ * @description 反序列化 破坏单例
+ * @auther yanzhaoyao
+ * @date 2018/12/2 23:03
+ */
+public class SeriableTest {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        // 正常测试
+        System.out.println(LazyDCL.getInstance());
+        System.out.println(LazyDCL.getInstance());
+
+        //反序列化
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("D:\\a.txt"));
+        oos.writeObject(LazyDCL.getInstance());
+        oos.close();
+
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream("D:\\a.txt"));
+        LazyDCL lazyDCL = (LazyDCL) ois.readObject();
+        ois.close();
+        System.out.println(lazyDCL);
+
+    }
+}
+```
+
+注意LazyDCL要实现序列化接口
+
+```java
+public class LazyDCL implements Serializable {
+```
+
+输出结果如下
+
+```
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@568db2f2
+```
+
+**反序列化的解决方法**
+
+添加一个Object类型的回调方法readResolve()
+
+```java
+public class LazyDCL implements Serializable {
+    ....
+    // 在反序列化时，直接调用返回对象，而不是返回新的对象
+    private Object readResolve() {
+        return lazy;
+    }
+    ...
+}
+```
+
+输出结果
+
+```
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+
+com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c
+```
 
