@@ -295,6 +295,281 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="燕兆耀">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/img/avatar/default.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="燕兆耀的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/04/理解MySQL底层B-tree索引机制/" itemprop="url">理解MySQL底层B+tree索引机制</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-04T20:12:07+08:00">
+                2018-12-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/性能优化/" itemprop="url" rel="index">
+                    <span itemprop="name">性能优化</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="一、初识Mysql体系结构"><a href="#一、初识Mysql体系结构" class="headerlink" title="一、初识Mysql体系结构"></a>一、初识Mysql体系结构</h1><p><strong>整体结构图</strong></p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/wps4EA1.tmp.jpg" alt="img"></p>
+<ul>
+<li><p>1，Connectors </p>
+<p>接入方 支持协议很多</p>
+</li>
+<li><p>2，Management Serveices &amp; Utilities： </p>
+<p>系统管理和控制工具</p>
+<p>例如：备份恢复，mysql复制集群等</p>
+</li>
+<li><p>3，Connection Pool </p>
+<p>连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求 </p>
+</li>
+<li><p>4，SQL Interface</p>
+<p>SQL接口：接受用户的SQL命令，并且返回用户需要查询的结果。比如select from就是调用SQL Interface</p>
+</li>
+<li><p>5，Parser</p>
+<p> 解析器，SQL命令传递到解析器的时候会被解析器验证和解析。解析器是由Lex和YACC实现的。</p>
+</li>
+<li><p>6，Optimizer</p>
+<p>查询优化器，SQL语句在查询之前会使用查询优化器对查询进行优化</p>
+</li>
+<li><p>7，Cache和Buffer（高速缓存区）</p>
+<p> 查询缓存，如果查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据。 </p>
+</li>
+<li><p>8，Pluggable Storage Engines</p>
+<p>插件式存储引擎。存储引擎是MySql中具体的与文件打交道的子系统。也是Mysql最具有特色的一个地方。 Mysql的存储引擎是插件式的。</p>
+</li>
+<li><p>9，File System  </p>
+<p>文件系统，数据、日志（redo，undo）、索引、错误日志、查询记录、慢查询等</p>
+</li>
+</ul>
+<p><strong>运行时机理图</strong></p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/wps5B52.tmp.png" alt="img"></p>
+<h1 id="二、理解Mysql底层B-tree索引机制"><a href="#二、理解Mysql底层B-tree索引机制" class="headerlink" title="二、理解Mysql底层B+tree索引机制"></a>二、理解Mysql底层B+tree索引机制</h1><p>写在前面的话</p>
+<p><strong><em>正确</em></strong>的创建<strong><em>合适</em></strong>的索引，是提升数据库查询性能的<strong><em>基础</em></strong></p>
+<h2 id="索引是什么？"><a href="#索引是什么？" class="headerlink" title="索引是什么？"></a><strong>索引是什么？</strong></h2><p>索引定义：</p>
+<p>索引是为了加速对表中数据行的检索而创建的一种分散存储的<strong>数据结构</strong></p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082031.png" alt="120421194082031"></p>
+<h2 id="为什么要用索引？"><a href="#为什么要用索引？" class="headerlink" title="为什么要用索引？"></a>为什么要用索引？</h2><p>索引意义：</p>
+<p>​     索引能极大的减少存储引擎需要扫描的数据量</p>
+<p>​     索引可以把随机IO变成顺序IO</p>
+<p>​     索引可以帮助我们在进行分组、排序等操作时，避免使用临时表</p>
+<h2 id="为什么是B-Tree？"><a href="#为什么是B-Tree？" class="headerlink" title="为什么是B+Tree？"></a>为什么是B+Tree？</h2><p>二叉查找树    </p>
+<p>平衡二叉树  </p>
+<p>多路平衡查找树 </p>
+<p>加强版多路平衡查找树</p>
+<p>详细了解上面的数据结构可以参见<a href="https://www.cnblogs.com/vianzhang/p/7922426.html" target="_blank" rel="noopener">帖子</a></p>
+<h3 id="二叉查找树，Binary-Search-Tree"><a href="#二叉查找树，Binary-Search-Tree" class="headerlink" title="二叉查找树，Binary Search Tree"></a>二叉查找树，Binary Search Tree</h3><p>每个分支最多有两个（路）</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082038.Png" alt="120421194082038"></p>
+<h3 id="平衡二叉查找树，Balance-binary-search-tree"><a href="#平衡二叉查找树，Balance-binary-search-tree" class="headerlink" title="平衡二叉查找树，Balance binary search tree"></a>平衡二叉查找树，Balance binary search tree</h3><p>平衡二叉树（AVL树）在符合二叉查找树的条件下，还满足任何节点的两个子树的高度最大差为1。</p>
+<p>先了解下磁盘的相关知识。</p>
+<p>系统从磁盘读取数据到内存时是以磁盘块（block）为基本单位的，位于同一个磁盘块中的数据会被一次性读取出来，而不是需要什么取什么。</p>
+<p>X &lt; 10 –&gt; P1</p>
+<p>X = 10 –&gt; 命中</p>
+<p>X &gt; 10 –&gt; P2</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082041.Png" alt="120421194082041"></p>
+<p>一个磁盘块：</p>
+<p>​    绿色：关键字 （这里关键字就比如是id = 10）</p>
+<p>​    蓝色：数据区（比如图上为 id  为 10 整条记录 id 、name 、age  、 phoneNum）</p>
+<p>​    粉色：P1 P2 子节点的引用</p>
+<p>模拟查找关键字id = 8的过程：</p>
+<p>​    1.从根节点开始找磁盘块1，读入内存，  发现  8 &lt; 10 –&gt; P1 ，一次IO操作</p>
+<p>​    2.此时P1指向磁盘块2，读入内存，           发现 8 &gt; 5 –&gt; P2， 一次IO操作</p>
+<p>​    3.此时P2指向磁盘块5，读入内存，         发现 8 = 8，命中 ，一次IO操作</p>
+<p>​    （这里的IO操作理解为读取一个磁盘块，包括关键字、数据区、子节点引用）</p>
+<p> 上面索引到id为8的记录，需要3次IO操作、3次内存查找。毕竟上面是举例子，假如我们的老师teacher表数据量非常大，那id就很多，这样这个平衡二叉树的高度就很大，假如很不幸我们要找的id = 8的记录，在这颗树最大的高度，那这样的命中索引，需要很多次IO操作。</p>
+<p>可想而知，这种索引的规则太随机，MySQL肯定不是采用的这样</p>
+<p><strong>小结</strong></p>
+<p>它太深了<br>​    数据处的（高）深度决定着他的IO操作次数，IO操作耗时大<br>它太小了<br>​    每一个磁盘块（节点/页）保存的数据量太小了<br>​    没有很好的利用操作磁盘IO的数据交换特性，<br>​    也没有利用好磁盘IO的预读能力（空间局部性原理），从而带来频繁的IO操作</p>
+<h2 id="多路平衡查找树，B-Tree"><a href="#多路平衡查找树，B-Tree" class="headerlink" title="多路平衡查找树，B-Tree"></a>多路平衡查找树，B-Tree</h2><p>B-Tree是为磁盘等外存储设备设计的一种平衡查找树。</p>
+<p><strong><em>绝对平衡树</em></strong> </p>
+<p>B-Tree中的每个节点根据实际情况可以包含大量的关键字信息和分支，如下图所示为一个3阶的B-Tree： </p>
+<p>X &lt; 17 –&gt; P1<br>X = 17 命中<br>17&lt; X &lt; 35 –&gt; P2<br>X = 35 命中<br>X &gt; 35 –&gt; P3</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082048.Png" alt="120421194082048"></p>
+<p>模拟查找关键字的过程：(省略)</p>
+<p>B-Tree相对于AVLTree缩减了节点个数，使每次磁盘I/O取到内存的数据都发挥了作用，从而提高了查询效率。</p>
+<h2 id="加强版多路平衡查找树-B-Tree"><a href="#加强版多路平衡查找树-B-Tree" class="headerlink" title="加强版多路平衡查找树 B+Tree"></a>加强版多路平衡查找树 B+Tree</h2><p>B+Tree是在B-Tree基础上的一种优化，使其更适合实现外存储索引结构，InnoDB存储引擎就是用B+Tree实现其索引结构。</p>
+<p>MySQL的B+Tree</p>
+<p>左闭合B+Tree：<br>1 &lt;= X &lt; 28 –&gt; P1<br>28 &lt;= X &lt; 66 –&gt; P2<br>66 &lt;= X –&gt; P3</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082052.Png" alt="120421194082052"></p>
+<p>从上一节中的B-Tree结构图中可以看到每个节点中不仅包含数据的key值（关键字，子节点引用），还有data值（一整条记录）。而每一个页的存储空间是有限的，如果data数据较大时将会导致每个节点（即一个页）能存储的key的数量很小，当存储的数据量很大时同样会导致B-Tree的深度较大，增大查询时的磁盘I/O次数，进而影响查询效率。在B+Tree中，所有数据记录节点都是按照键值大小顺序存放在同一层的叶子节点上，而非叶子节点上只存储key值信息，这样可以大大加大每个节点存储的key值数量，降低B+Tree的高度。</p>
+<p><strong>B+Tree与B-Tree的区别</strong></p>
+<p>1、B+节点关键字搜索采用闭合区间<br>2、B+非叶节点不保存数据相关信息，只保存关键字和子节点的引用<br>3、B+关键字对应的数据保存在叶子节点中<br>4、B+叶子节点是顺序排列的，并且相邻节点具有顺序引用的关系</p>
+<h2 id="为什么选用B-Tree-？"><a href="#为什么选用B-Tree-？" class="headerlink" title="为什么选用B+Tree ？"></a>为什么选用B+Tree ？</h2><p>B+树是B-树的变种（PLUS版）多路绝对平衡查找树，他拥有B-树的优势<br>B+树扫库、扫表能力更强<br>B+树的磁盘读写能力更强<br>B+树的排序能力更强<br>B+树的查询效率更加稳定（仁者见仁、智者见智）</p>
+<h1 id="Mysql-B-Tree索引体现形式"><a href="#Mysql-B-Tree索引体现形式" class="headerlink" title="Mysql B+Tree索引体现形式"></a>Mysql B+Tree索引体现形式</h1><h2 id="Mysql-B-Tree索引体现形式-Myisam"><a href="#Mysql-B-Tree索引体现形式-Myisam" class="headerlink" title="Mysql B+Tree索引体现形式 - Myisam"></a>Mysql B+Tree索引体现形式 - Myisam</h2><p>MyISAM是默认<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a>（Mysql5.1前）。它基于更老的ISAM代码，但有很多有用的扩展。（注意MySQL 5.1不支持ISAM）。 每个MyISAM在磁盘上存储成三个文件，每一个文件的名字均以表的名字开始，扩展名指出文件类型。</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082063.Png" alt="120421194082063"></p>
+<p>.frm文件存储表定义；</p>
+<p>·MYD (MYData)文件存储表的数据；</p>
+<p>.MYI (MYIndex)文件存储表的索引。</p>
+<p>简介（<a href="https://baike.baidu.com/item/myisam/8970102?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
+<p>​    <code>要明确表示你想要用一个MyISAM表格，请用ENGINE表选项指出来：</code></p>
+<p>​    <code>CREATE TABLE t (i INT) ENGINE = MYISAM;</code></p>
+<p>​    <code>注释：老版本的MySQL使用TYPE而不是ENGINE（例如，TYPE = MYISAM）。MySQL 5.1为向下兼容而支持这个语法，但TYPE现在被轻视，而ENGINE是首先的用法。</code></p>
+<p>​    <code>一般地，ENGINE选项是不必要的；除非默认已经被改变了，InnoDB是默认[</code><a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a><code>]（Mysql 5.1后）。</code></p>
+<p>​    <code>你可以用myisamchk工具来检查或修复MyISAM表。请参阅MySQL 5.1参考手册5.9.5.6节，“使用myisamchk做崩溃恢复”。你也可以用myisampack来压缩MyISAM表，让它们占更少的空间。请参阅MySQL 5.1参考手册8.2节，“myisampack，产生压缩、只读的MyISAM表”。</code></p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082067.Png" alt="120421194082067"></p>
+<h2 id="Mysql-B-Tree索引体现形式-innodb"><a href="#Mysql-B-Tree索引体现形式-innodb" class="headerlink" title="Mysql B+Tree索引体现形式 - innodb"></a>Mysql B+Tree索引体现形式 - innodb</h2><p>InnoDB，是MySQL的数据库引擎之一，为<a href="https://baike.baidu.com/item/MySQL%20AB" target="_blank" rel="noopener">MySQL AB</a>发布binary的标准之一。InnoDB由Innobase Oy公司所开发，2006年五月时由<a href="https://baike.baidu.com/item/%E7%94%B2%E9%AA%A8%E6%96%87%E5%85%AC%E5%8F%B8/430115" target="_blank" rel="noopener">甲骨文公司</a>并购。与传统的<a href="https://baike.baidu.com/item/ISAM" target="_blank" rel="noopener">ISAM</a>与<a href="https://baike.baidu.com/item/MyISAM" target="_blank" rel="noopener">MyISAM</a>相比，InnoDB的最大特色就是支持了<a href="https://baike.baidu.com/item/ACID/10738" target="_blank" rel="noopener">ACID</a>兼容的<a href="https://baike.baidu.com/item/%E4%BA%8B%E5%8A%A1/5945882" target="_blank" rel="noopener">事务</a>（Transaction）功能，类似于<a href="https://baike.baidu.com/item/PostgreSQL" target="_blank" rel="noopener">PostgreSQL</a>。</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082071.Png" alt="120421194082071"></p>
+<p>简介（<a href="https://baike.baidu.com/item/innodb/8970025?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
+<p>​    事务型数据库的首选引擎，支持ACID事务，支持行级锁定。InnoDB是为处理巨大数据量时的最大性能设计。InnoDB存储引擎完全与MySQL服务器整合，InnoDB存储引擎为在主内存中缓存数据和索引而维持它自己的缓冲池。InnoDB存储它的表&amp;索引在一个表空间中，表空间可以包含数个文件（或原始磁盘分区）。这与MyISAM表不同，比如在MyISAM表中每个表被存在分离的文件中。InnoDB 表可以是任何尺寸，即使在文件尺寸被限制为2GB的操作系统上。InnoDB默认地被包含在MySQL二进制分发中。Windows Essentials installer使InnoDB成为Windows上MySQL的默认表。</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082075-1543934044732.Png" alt="120421194082075"></p>
+<p>MySQL的innodb是以主键索引来组织数据结构的，加入你见表的时候，没有主键，innodb会自动隐式的建立一个主键索引，只是你外界看不见而已。</p>
+<p><strong>辅助索引</strong>命中的只是<strong>主键索引</strong>的<strong>关键字</strong></p>
+<h2 id="Innodb-VS-Myisam"><a href="#Innodb-VS-Myisam" class="headerlink" title="Innodb VS Myisam"></a>Innodb VS Myisam</h2><p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082079.Png" alt="120421194082079"></p>
+<p>Innodb: 假如你频繁的修改、更新辅助索引，主键索引是不需要重排序的</p>
+<p>//TODO 这里描述的待补充，还没理解透彻</p>
+<h1 id="索引知识补充"><a href="#索引知识补充" class="headerlink" title="索引知识补充"></a>索引知识补充</h1><p>列的离散性 count(distinct col) : count(col)</p>
+<p>找出离散性最好的列？</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082084.Png" alt="120421194082084"></p>
+<p>name的离散性最大，越大离散性越好<br>结论：<br>​    离散性越高<br>​    选择性就越好</p>
+<h2 id="最左匹配原则"><a href="#最左匹配原则" class="headerlink" title="最左匹配原则"></a>最左匹配原则</h2><p>对索引中关键字进行计算（对比），一定是从左往右依次进行，且不可跳过</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082088.Png" alt="120421194082088"></p>
+<h2 id="联合索引？so-seay"><a href="#联合索引？so-seay" class="headerlink" title="联合索引？so seay"></a>联合索引？so seay</h2><p>单列索引<br>​    节点中关键字[name]<br>联合索引<br>​    节点中关键字[name,phoneNum]<br><strong>单列索引是特殊的联合索引</strong></p>
+<p>联合索引列选择原则<br>1，经常用的列优先 【最左匹配原则】<br>2，选择性（离散度）高的列优先【离散度高原则】<br>3，宽度小的列优先【最少空间原则】</p>
+<p><strong>机灵的李二狗</strong></p>
+<p>经排查发现最常用的sql语句：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Select * from users where name = ? ;</span><br><span class="line">Select * from users where name = ? and phoneNum = ?;</span><br></pre></td></tr></table></figure>
+<p>机灵的李二狗的解决方案：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">create index idx_name on users(name);#冗余索引，根本用不上</span><br><span class="line">create index idx_name_phoneNum on users(name,phoneNum);</span><br></pre></td></tr></table></figure>
+<h2 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h2><p>如果查询列可通过索引节点中的关键字直接返回，则该索引称之为<br>覆盖索引。<br>覆盖索引可减少数据库IO，将随机IO变为顺序IO，可提高查询性能</p>
+<p>例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">create index idx_name_phoneNum on users(name,phoneNum);</span><br><span class="line"></span><br><span class="line">select name,phoneNum form users where name = &quot;张三&quot;；</span><br></pre></td></tr></table></figure>
+<p>在索引的子节点命中了 返回的列，就不需要再继续往B+Tree的底部叶子节点 读取数据了，减少了IO操作，提高了查询速度。</p>
+<p>这就是为什么不建议大家select * from table 的原因，需要什么列就查什么列，可能会命中覆盖索引，这样就会极大的提高查询效率。</p>
+<h1 id="现在，你能都理解了么？"><a href="#现在，你能都理解了么？" class="headerlink" title="现在，你能都理解了么？"></a>现在，你能都理解了么？</h1><p>索引列的数据长度能少则少。</p>
+<p>索引一定不是越多越好，越全越好，一定是建合适的。</p>
+<p>匹配列前缀可用到索引 like 9999%，like %9999%、like %9999用不到索引；</p>
+<p>Where 条件中 not in 和 &lt;&gt;操作无法使用索引；（&lt;&gt;在主键列上操作可能会使用索引，//TODO 后面在测试）</p>
+<p>匹配范围值，order by 也可用到索引；</p>
+<p>多用指定列查询，只返回自己想到的数据列，少用select *；</p>
+<p>联合索引中如果不是按照索引最左列开始查找，无法使用索引；</p>
+<p>联合索引中精确匹配最左前列并范围匹配另外一列可以用到索引；</p>
+<p>联合索引中如果查询中有某个列的范围查询，则其右边的所有列都无法使用索引；</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/设计模式（五）-代理模式（Proxy-Pattern）/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -2241,137 +2516,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/20/hello-world/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="燕兆耀">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/img/avatar/default.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="燕兆耀的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/20/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-20T21:08:15+08:00">
-                2018-11-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -2417,7 +2568,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2428,7 +2579,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -2439,7 +2590,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
