@@ -32,9 +32,9 @@ categories: 设计模式
 
 # 二、实现
 
-我们将创建一个 *Image* 接口和实现了 *Image* 接口的实体类。*ProxyImage* 是一个代理类，减少 *RealImage* 对象加载的内存占用。
+我们将创建一个 *Image* 接口和实现了 *Image* 接口的实体类。*ImageProxy* 是一个代理类，减少 *ImageImpl* 对象加载的内存占用。
 
-*ProxyPatternDemo*，我们的演示类使用 *ProxyImage* 来获取要加载的 *Image* 对象，并按照需求进行显示。
+*ProxyPatternDemo*，我们的演示类使用 *ImageProxy* 来获取要加载的 *Image* 对象，并按照需求进行显示。
 
 ### 步骤 1
 
