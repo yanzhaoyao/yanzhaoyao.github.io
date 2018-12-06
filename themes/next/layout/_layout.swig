@@ -21,7 +21,11 @@
 
   <div class="{{ container_class }} {% block page_class %}{% endblock %}">
     <div class="headband"></div>
-
+	<!-- 左上角实现fork me on github -->
+	<a href="https://github.com/yanzhaoyao/yanzhaoyao.github.io">
+		<img style="position: absolute; top: 0; right: 0; border: 0;" src="/img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub">
+	</a>
+	
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"> {%- include '_partials/header.swig' %} </div>
     </header>

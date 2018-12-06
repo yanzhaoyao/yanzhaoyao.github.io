@@ -21,6 +21,7 @@
   {% endif %}
 </div>
 
+<!-- 
 {% if theme.footer.powered %}
   <div class="powered-by">{#
   #}{{ __('footer.powered', '<a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a>') }}{#
@@ -45,3 +46,4 @@
   #}{{ theme.footer.custom_text }}{#
 #}</div>
 {% endif %}
+-->
