@@ -450,139 +450,25 @@
       
         
           
-            <h1 id="一、初识Mysql体系结构"><a href="#一、初识Mysql体系结构" class="headerlink" title="一、初识Mysql体系结构"></a>一、初识Mysql体系结构</h1><p><strong>整体结构图</strong></p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/wps4EA1.tmp.jpg" alt="img"></p>
-<ul>
-<li><p>Connectors </p>
-<p>接入方支持协议很多</p>
-</li>
-<li><p>Management Serveices &amp; Utilities</p>
-<p>系统管理和控制工具，例如：备份恢复，mysql复制集群等</p>
-</li>
-<li><p>Connection Pool</p>
-<p>连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求</p>
-</li>
-<li><p>SQL Interface</p>
-<p>SQL接口：接受用户的SQL命令，并且返回用户需要查询的结果。比如select from就是调用SQL Interface</p>
-</li>
-<li><p>Parser</p>
-<p> 解析器，SQL命令传递到解析器的时候会被解析器验证和解析。解析器是由Lex和YACC实现的。</p>
-</li>
-<li><p>Optimizer</p>
-<p>查询优化器，SQL语句在查询之前会使用查询优化器对查询进行优化</p>
-</li>
-<li><p>Cache和Buffer（高速缓存区）</p>
-<p> 查询缓存，如果查询缓存有命中的查询结果，查询语句就可以直接去查询缓存中取数据。</p>
-</li>
-<li><p>Pluggable Storage Engines</p>
-<p>插件式存储引擎。存储引擎是MySql中具体的与文件打交道的子系统。也是Mysql最具有特色的一个地方。 Mysql的存储引擎是插件式的。</p>
-</li>
-<li><p>File System</p>
-<p>文件系统，数据、日志（redo，undo）、索引、错误日志、查询记录、慢查询等</p>
-</li>
-</ul>
-<p><strong>运行时机理图</strong></p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/wps5B52.tmp.png" alt="img"></p>
-<h1 id="二、理解Mysql底层B-tree索引机制"><a href="#二、理解Mysql底层B-tree索引机制" class="headerlink" title="二、理解Mysql底层B+tree索引机制"></a>二、理解Mysql底层B+tree索引机制</h1><p>写在前面的话</p>
-<p><strong>正确</strong>的创建<strong>合适</strong>的索引，是提升数据库查询性能的<strong>基础</strong></p>
-<h2 id="索引是什么？"><a href="#索引是什么？" class="headerlink" title="索引是什么？"></a><strong>索引是什么？</strong></h2><p>索引定义：</p>
-<p>索引是为了加速对表中数据行的检索而创建的一种分散存储的<strong>数据结构</strong></p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082031.png" alt="120421194082031"></p>
-<h2 id="为什么要用索引？"><a href="#为什么要用索引？" class="headerlink" title="为什么要用索引？"></a>为什么要用索引？</h2><p>索引意义：</p>
-<p>​    索引能极大的减少存储引擎需要扫描的数据量</p>
-<p>​    索引可以把随机IO变成顺序IO</p>
-<p>​    索引可以帮助我们在进行分组、排序等操作时，避免使用临时表</p>
-<h2 id="为什么是B-Tree？"><a href="#为什么是B-Tree？" class="headerlink" title="为什么是B+Tree？"></a>为什么是B+Tree？</h2><p>二叉查找树、平衡二叉树、多路平衡查找树、加强版多路平衡查找树 </p>
-<p>详细了解上面的数据结构可以参见<a href="https://www.cnblogs.com/vianzhang/p/7922426.html" target="_blank" rel="noopener">帖子</a></p>
-<h3 id="二叉查找树，Binary-Search-Tree"><a href="#二叉查找树，Binary-Search-Tree" class="headerlink" title="二叉查找树，Binary Search Tree"></a>二叉查找树，Binary Search Tree</h3><p>每个分支最多有两个（路）</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082038.Png" alt="120421194082038"></p>
-<h3 id="平衡二叉查找树，Balance-binary-search-tree"><a href="#平衡二叉查找树，Balance-binary-search-tree" class="headerlink" title="平衡二叉查找树，Balance binary search tree"></a>平衡二叉查找树，Balance binary search tree</h3><p>平衡二叉树（AVL树）在符合二叉查找树的条件下，还满足任何节点的两个子树的高度最大差为1。</p>
-<p>先了解下磁盘的相关知识。</p>
-<p>系统从磁盘读取数据到内存时是以磁盘块（block）为基本单位的，位于同一个磁盘块中的数据会被一次性读取出来，而不是需要什么取什么。</p>
-<p>X &lt; 10 –&gt; P1</p>
-<p>X = 10 –&gt; 命中</p>
-<p>X &gt; 10 –&gt; P2</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082041.Png" alt="120421194082041"></p>
-<p>一个磁盘块：</p>
-<p>​    绿色：关键字 （这里关键字就比如是id = 10）</p>
-<p>​    蓝色：数据区（比如图上为 id  为 10 整条记录 id 、name 、age  、 phoneNum）</p>
-<p>​    粉色：P1 P2 子节点的引用</p>
-<p>模拟查找关键字id = 8的过程：</p>
-<p>​    1.从根节点开始找磁盘块1，读入内存，  发现  8 &lt; 10 –&gt; P1 ，一次IO操作</p>
-<p>​    2.此时P1指向磁盘块2，读入内存，           发现 8 &gt; 5 –&gt; P2， 一次IO操作</p>
-<p>​    3.此时P2指向磁盘块5，读入内存，         发现 8 = 8，命中 ，一次IO操作</p>
-<p>​    （这里的IO操作理解为读取一个磁盘块，包括关键字、数据区、子节点引用）</p>
-<p> 上面索引到id为8的记录，需要3次IO操作、3次内存查找。毕竟上面是举例子，假如我们的老师teacher表数据量非常大，那id就很多，这样这个平衡二叉树的高度就很大，假如很不幸我们要找的id = 8的记录，在这颗树最大的高度，那这样的命中索引，需要很多次IO操作。</p>
-<p>可想而知，这种索引的规则太随机，MySQL肯定不是采用的这样</p>
-<p><strong>小结</strong></p>
-<p>它太深了<br>​    数据处的（高）深度决定着他的IO操作次数，IO操作耗时大<br>它太小了<br>​    每一个磁盘块（节点/页）保存的数据量太小了<br>​    没有很好的利用操作磁盘IO的数据交换特性，<br>​    也没有利用好磁盘IO的预读能力（空间局部性原理），从而带来频繁的IO操作</p>
-<h2 id="多路平衡查找树，B-Tree"><a href="#多路平衡查找树，B-Tree" class="headerlink" title="多路平衡查找树，B-Tree"></a>多路平衡查找树，B-Tree</h2><p>B-Tree是为磁盘等外存储设备设计的一种平衡查找树。</p>
-<p><strong><em>绝对平衡树</em></strong> </p>
-<p>B-Tree中的每个节点根据实际情况可以包含大量的关键字信息和分支，如下图所示为一个3阶的B-Tree： </p>
-<p>X &lt; 17 –&gt; P1<br>X = 17 命中<br>17&lt; X &lt; 35 –&gt; P2<br>X = 35 命中<br>X &gt; 35 –&gt; P3</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082048.Png" alt="120421194082048"></p>
-<p>模拟查找关键字的过程：(省略)</p>
-<p>B-Tree相对于AVLTree缩减了节点个数，使每次磁盘I/O取到内存的数据都发挥了作用，从而提高了查询效率。</p>
-<h2 id="加强版多路平衡查找树-B-Tree"><a href="#加强版多路平衡查找树-B-Tree" class="headerlink" title="加强版多路平衡查找树 B+Tree"></a>加强版多路平衡查找树 B+Tree</h2><p>B+Tree是在B-Tree基础上的一种优化，使其更适合实现外存储索引结构，InnoDB存储引擎就是用B+Tree实现其索引结构。</p>
-<p>MySQL的B+Tree</p>
-<p>左闭合B+Tree：<br>1 &lt;= X &lt; 28 –&gt; P1<br>28 &lt;= X &lt; 66 –&gt; P2<br>66 &lt;= X –&gt; P3</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082052.Png" alt="120421194082052"></p>
-<p>从上一节中的B-Tree结构图中可以看到每个节点中不仅包含数据的key值（关键字，子节点引用），还有data值（一整条记录的磁盘地址）。而每一个页的存储空间是有限的，如果data数据较大时将会导致每个节点（即一个页）能存储的key的数量很小，当存储的数据量很大时同样会导致B-Tree的深度较大，增大查询时的磁盘I/O次数，进而影响查询效率。<strong>在B+Tree中，所有数据记录节点都是按照键值大小顺序存放在同一层的叶子节点上，而非叶子节点上只存储key值信息，这样可以大大加大每个节点存储的key值数量，降低B+Tree的高度。</strong></p>
-<p><strong>B+Tree与B-Tree的区别</strong></p>
-<p>1、B+节点关键字搜索采用闭合区间<br>2、B+非叶节点不保存数据相关信息，只保存关键字和子节点的引用<br>3、B+关键字对应的数据保存在叶子节点中<br>4、B+叶子节点是顺序排列的，并且相邻节点具有顺序引用的关系</p>
-<h2 id="为什么选用B-Tree-？"><a href="#为什么选用B-Tree-？" class="headerlink" title="为什么选用B+Tree ？"></a>为什么选用B+Tree ？</h2><p>B+树是B-树的变种（PLUS版）多路绝对平衡查找树，他拥有B-树的优势<br>B+树扫库、扫表能力更强<br>B+树的磁盘读写能力更强<br>B+树的排序能力更强<br>B+树的查询效率更加稳定（仁者见仁、智者见智）</p>
-<h1 id="Mysql-B-Tree索引体现形式"><a href="#Mysql-B-Tree索引体现形式" class="headerlink" title="Mysql B+Tree索引体现形式"></a>Mysql B+Tree索引体现形式</h1><h2 id="Mysql-B-Tree索引体现形式-Myisam"><a href="#Mysql-B-Tree索引体现形式-Myisam" class="headerlink" title="Mysql B+Tree索引体现形式 - Myisam"></a>Mysql B+Tree索引体现形式 - Myisam</h2><p>MyISAM是默认<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a>（Mysql5.1前）。它基于更老的ISAM代码，但有很多有用的扩展。（注意MySQL 5.1不支持ISAM）。 每个MyISAM在磁盘上存储成三个文件，每一个文件的名字均以表的名字开始，扩展名指出文件类型。</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082063.Png" alt="120421194082063"></p>
-<p>.frm文件存储表定义；</p>
-<p>·MYD (MYData)文件存储表的数据；</p>
-<p>.MYI (MYIndex)文件存储表的索引。</p>
-<p>简介（<a href="https://baike.baidu.com/item/myisam/8970102?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
-<p>​    <code>要明确表示你想要用一个MyISAM表格，请用ENGINE表选项指出来：</code></p>
-<p>​    <code>CREATE TABLE t (i INT) ENGINE = MYISAM;</code></p>
-<p>​    <code>注释：老版本的MySQL使用TYPE而不是ENGINE（例如，TYPE = MYISAM）。MySQL 5.1为向下兼容而支持这个语法，但TYPE现在被轻视，而ENGINE是首先的用法。</code></p>
-<p>​    <code>一般地，ENGINE选项是不必要的；除非默认已经被改变了，InnoDB是默认[</code><a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a><code>]（Mysql 5.1后）。</code></p>
-<p>​    <code>你可以用myisamchk工具来检查或修复MyISAM表。请参阅MySQL 5.1参考手册5.9.5.6节，“使用myisamchk做崩溃恢复”。你也可以用myisampack来压缩MyISAM表，让它们占更少的空间。请参阅MySQL 5.1参考手册8.2节，“myisampack，产生压缩、只读的MyISAM表”。</code></p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082067.Png" alt="120421194082067"></p>
-<h2 id="Mysql-B-Tree索引体现形式-innodb"><a href="#Mysql-B-Tree索引体现形式-innodb" class="headerlink" title="Mysql B+Tree索引体现形式 - innodb"></a>Mysql B+Tree索引体现形式 - innodb</h2><p>InnoDB，是MySQL的数据库引擎之一，为<a href="https://baike.baidu.com/item/MySQL%20AB" target="_blank" rel="noopener">MySQL AB</a>发布binary的标准之一。InnoDB由Innobase Oy公司所开发，2006年五月时由<a href="https://baike.baidu.com/item/%E7%94%B2%E9%AA%A8%E6%96%87%E5%85%AC%E5%8F%B8/430115" target="_blank" rel="noopener">甲骨文公司</a>并购。与传统的<a href="https://baike.baidu.com/item/ISAM" target="_blank" rel="noopener">ISAM</a>与<a href="https://baike.baidu.com/item/MyISAM" target="_blank" rel="noopener">MyISAM</a>相比，InnoDB的最大特色就是支持了<a href="https://baike.baidu.com/item/ACID/10738" target="_blank" rel="noopener">ACID</a>兼容的<a href="https://baike.baidu.com/item/%E4%BA%8B%E5%8A%A1/5945882" target="_blank" rel="noopener">事务</a>（Transaction）功能，类似于<a href="https://baike.baidu.com/item/PostgreSQL" target="_blank" rel="noopener">PostgreSQL</a>。</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082071.Png" alt="120421194082071"></p>
-<p>简介（<a href="https://baike.baidu.com/item/innodb/8970025?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
-<p>​    事务型数据库的首选引擎，支持ACID事务，支持行级锁定。InnoDB是为处理巨大数据量时的最大性能设计。InnoDB存储引擎完全与MySQL服务器整合，InnoDB存储引擎为在主内存中缓存数据和索引而维持它自己的缓冲池。InnoDB存储它的表&amp;索引在一个表空间中，表空间可以包含数个文件（或原始磁盘分区）。这与MyISAM表不同，比如在MyISAM表中每个表被存在分离的文件中。InnoDB 表可以是任何尺寸，即使在文件尺寸被限制为2GB的操作系统上。InnoDB默认地被包含在MySQL二进制分发中。Windows Essentials installer使InnoDB成为Windows上MySQL的默认表。</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082075-1543934044732.Png" alt="120421194082075"></p>
-<p>MySQL的innodb是以主键索引来组织数据结构的，假如你见表的时候，没有主键，innodb会自动隐式的建立一个主键索引。</p>
-<p>InnoDB存储引擎中页的大小默认为16KB，一般表的主键类型为INT（占用4个字节）或BIGINT（占用8个字节），指针类型也一般为4或8个字节，也就是说一个页（B+Tree中的一个节点）中大概存储16KB/(8B+8B)=1K个键值（因为是估值，为方便计算，这里的K取值为〖10〗^3）。也就是说一个深度为3的B+Tree索引可以维护10^3 <em> 10^3 </em> 10^3 = 10亿 条记录。</p>
-<p>实际情况中每个节点可能不能填充满，因此在数据库中，B+Tree的高度一般都在2~4层。<a href="http://lib.csdn.net/base/mysql" target="_blank" rel="noopener">mysql</a>的InnoDB存储引擎在设计时是将<strong>根节点常驻内存</strong>的，也就是说查找某一键值的行记录时最多只需要1~3次磁盘I/O操作。</p>
-<p>数据库中的B+Tree索引可以分为<strong>聚集索引（clustered index）</strong>和<strong>辅助索引（secondary index）</strong>。上面的B+Tree示例图在数据库中的实现即为聚集索引，<strong>聚集索引的B+Tree中的叶子节点存放的是整张表的行记录数据</strong>。辅助索引与聚集索引的区别在于<strong>辅助索引的叶子节点并不包含行记录的全部数据，而是存储相应行数据的聚集索引键，即主键</strong>。当通过辅助索引来查询数据时，InnoDB存储引擎会遍历辅助索引找到主键，然后再通过主键在聚集索引中找到完整的行记录数据。</p>
-<h2 id="Innodb-VS-Myisam"><a href="#Innodb-VS-Myisam" class="headerlink" title="Innodb VS Myisam"></a>Innodb VS Myisam</h2><p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082079.Png" alt="120421194082079"></p>
-<p>Innodb: 假如你频繁的修改、更新辅助索引，主键索引是不需要重排序的</p>
-<h1 id="索引知识补充"><a href="#索引知识补充" class="headerlink" title="索引知识补充"></a>索引知识补充</h1><p>列的离散性 count(distinct col) : count(col)</p>
-<p>找出离散性最好的列？</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082084.Png" alt="120421194082084"></p>
-<p>name的离散性最大，越大离散性越好<br>结论：<br>​    离散性越高<br>​    选择性就越好</p>
-<h2 id="最左匹配原则"><a href="#最左匹配原则" class="headerlink" title="最左匹配原则"></a>最左匹配原则</h2><p>对索引中关键字进行计算（对比），一定是从左往右依次进行，且不可跳过</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082088.Png" alt="120421194082088"></p>
-<h2 id="联合索引？so-seay"><a href="#联合索引？so-seay" class="headerlink" title="联合索引？so seay"></a>联合索引？so seay</h2><p>单列索引<br>​    节点中关键字[name]<br>联合索引<br>​    节点中关键字[name,phoneNum]<br><strong>单列索引是特殊的联合索引</strong></p>
-<p>联合索引列选择原则<br>1，经常用的列优先 【最左匹配原则】<br>2，选择性（离散度）高的列优先【离散度高原则】<br>3，宽度小的列优先【最少空间原则】</p>
-<p><strong>机灵的李二狗</strong></p>
-<p>经排查发现最常用的sql语句：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Select * from users where name = ? ;</span><br><span class="line">Select * from users where name = ? and phoneNum = ?;</span><br></pre></td></tr></table></figure>
-<p>机灵的李二狗的解决方案：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">create index idx_name on users(name);#冗余索引，根本用不上</span><br><span class="line">create index idx_name_phoneNum on users(name,phoneNum);</span><br></pre></td></tr></table></figure>
-<h2 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a>覆盖索引</h2><p>如果查询列可通过索引节点中的关键字直接返回，则该索引称之为<strong>覆盖索引</strong>。<br>覆盖索引可减少数据库IO，将随机IO变为顺序IO，可提高查询性能</p>
-<p>例：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">create index idx_name_phoneNum on users(name,phoneNum);</span><br><span class="line"></span><br><span class="line">select name,phoneNum form users where name = &quot;张三&quot;；</span><br></pre></td></tr></table></figure>
-<p>在索引的子节点命中了 返回的列，就不需要再继续往B+Tree的底部叶子节点 读取数据了，减少了IO操作，提高了查询速度。</p>
-<p>这就是为什么不建议大家select * from table 的原因，需要什么列就查什么列，可能会命中覆盖索引，这样就会极大的提高查询效率。</p>
-<h1 id="现在，你能都理解了么？"><a href="#现在，你能都理解了么？" class="headerlink" title="现在，你能都理解了么？"></a>现在，你能都理解了么？</h1><p>索引列的数据长度能少则少。</p>
-<p>索引一定不是越多越好，越全越好，一定是建合适的。</p>
-<p>匹配列前缀可用到索引 like 9999%（如果索引列数据离散性太差，执行器可能会放弃索引，全盘扫描），like %9999%、like %9999用不到索引；</p>
-<p>Where 条件中 not in 和 &lt;&gt;操作无法使用索引；（&lt;&gt;在主键列上操作可能会使用索引，//TODO 后面在测试）</p>
-<p>匹配范围值，order by 也可用到索引；</p>
-<p>多用指定列查询，只返回自己想到的数据列，少用select *；</p>
-<p>联合索引中如果不是按照索引最左列开始查找，无法使用索引；</p>
-<p>联合索引中精确匹配最左前列并范围匹配另外一列可以用到索引；</p>
-<p>联合索引中如果查询中有某个列的范围查询，则其右边的所有列都无法使用索引；</p>
+          一、初识Mysql体系结构整体结构图
 
-          
+
+Connectors 
+接入方支持协议很多
+
+Management Serveices &amp; Utilities
+系统管理和控制工具，例如：备份恢复，mysql复制集群等
+
+Connection Pool
+连接池：管理缓冲用户连接、用户名、密码、权限校
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/12/04/理解MySQL底层B-tree索引机制/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -757,58 +643,20 @@
       
         
           
-            <p>[TOC]</p>
-<h1 id="一、代理模式"><a href="#一、代理模式" class="headerlink" title="一、代理模式"></a>一、代理模式</h1><p>在代理模式（Proxy Pattern）中，一个类代表另一个类的功能。这种类型的设计模式属于结构型模式。</p>
-<p>在代理模式中，我们创建具有现有对象的对象，以便向外界提供功能接口。</p>
-<p><strong>应用实例：</strong> </p>
-<p>1、Windows 里面的快捷方式。 </p>
-<p>2、猪八戒去找高翠兰结果是孙悟空变的，可以这样理解：把高翠兰的外貌抽象出来，高翠兰本人和孙悟空都实现了这个接口，猪八戒访问高翠兰的时候看不出来这个是孙悟空，所以说孙悟空是高翠兰代理类。</p>
-<p>3、买火车票不一定在火车站买，也可以去代售点。</p>
-<p>4、一张支票或银行存单是账户中资金的代理。支票在市场交易中用来代替现金，并提供对签发人账号上资金的控制。</p>
-<p> 5、spring aop。</p>
-<p><strong>注意事项：</strong> 1、和适配器模式的区别：适配器模式主要改变所考虑对象的接口，而代理模式不能改变所代理类的接口。 2、和装饰器模式的区别：装饰器模式为了增强功能，而代理模式是为了加以控制。</p>
-<h1 id="二、实现"><a href="#二、实现" class="headerlink" title="二、实现"></a>二、实现</h1><p>我们将创建一个 <em>Image</em> 接口和实现了 <em>Image</em> 接口的实体类。<em>ImageProxy</em> 是一个代理类，减少 <em>ImageImpl</em> 对象加载的内存占用。</p>
-<p><em>ProxyPatternDemo</em>，我们的演示类使用 <em>ImageProxy</em> 来获取要加载的 <em>Image</em> 对象，并按照需求进行显示。</p>
-<h3 id="步骤-1"><a href="#步骤-1" class="headerlink" title="步骤 1"></a>步骤 1</h3><p>创建一个接口。</p>
-<p>Image.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Image</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">display</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-2"><a href="#步骤-2" class="headerlink" title="步骤 2"></a>步骤 2</h3><p>创建实现接口的实体类。</p>
-<p>ImageImpl.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ImageImpl</span> <span class="keyword">implements</span> <span class="title">Image</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> String fileName;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageImpl</span><span class="params">(String fileName)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.fileName = fileName;</span><br><span class="line">        loadFromDisk(fileName);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Displaying "</span> + fileName);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadFromDisk</span><span class="params">(String fileName)</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Loading "</span> + fileName);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>ImageProxy.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 21:55</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ImageProxy</span> <span class="keyword">implements</span> <span class="title">Image</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> ImageImpl image;</span><br><span class="line">    <span class="keyword">private</span> String fileName;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ImageProxy</span><span class="params">(String fileName)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.fileName = fileName;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(image == <span class="keyword">null</span>)&#123;</span><br><span class="line">            image = <span class="keyword">new</span> ImageImpl(fileName);</span><br><span class="line">        &#125;</span><br><span class="line">        image.display();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-3"><a href="#步骤-3" class="headerlink" title="步骤 3"></a>步骤 3</h3><p>当被请求时，使用 <em>ImageProxy</em> 来获取 <em>ImageImpl</em> 类的对象。</p>
-<p>ProxyPatternDemo.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProxyPatternDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Image image = <span class="keyword">new</span> ImageProxy(<span class="string">"test_10mb.jpg"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 图像将从磁盘加载</span></span><br><span class="line">        image.display();</span><br><span class="line">        System.out.println(<span class="string">""</span>);</span><br><span class="line">        <span class="comment">// 图像不需要从磁盘加载</span></span><br><span class="line">        image.display();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-4"><a href="#步骤-4" class="headerlink" title="步骤 4"></a>步骤 4</h3><p>执行程序，输出结果：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Loading test_10mb.jpg</span><br><span class="line">Displaying test_10mb.jpg</span><br><span class="line"></span><br><span class="line">Displaying test_10mb.jpg</span><br></pre></td></tr></table></figure>
-<h1 id="三、JDK-自带的动态代理"><a href="#三、JDK-自带的动态代理" class="headerlink" title="三、JDK 自带的动态代理"></a>三、JDK 自带的动态代理</h1><ul>
-<li>java.lang.reflect.Proxy:生成动态代理类和对象；</li>
-<li>java.lang.reflect.InvocationHandler（处理器接口）：可以通过invoke方法实现对真实角色的代理访问。</li>
-</ul>
-<p>每次通过 Proxy 生成的代理类对象都要指定对应的处理器对象。</p>
-<p>代码：</p>
-<p>a) 接口：Subject.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 22:05</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Subject</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">sellBooks</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">speak</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>b)真实对象：RealSubject.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 22:06</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RealSubject</span> <span class="keyword">implements</span> <span class="title">Subject</span></span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">sellBooks</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"卖书"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span> ;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">speak</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"说话"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"张三"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>c)处理器对象：MyInvocationHandler.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationHandler;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 22:07</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyInvocationHandler</span> <span class="keyword">implements</span> <span class="title">InvocationHandler</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 因为需要处理真实角色，所以要把真实角色传进来</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    Subject realSubject ;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyInvocationHandler</span><span class="params">(Subject realSubject)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.realSubject = realSubject;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> proxy    代理类</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method    正在调用的方法</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> args      方法的参数</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Throwable</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"调用代理类"</span>);</span><br><span class="line">        <span class="keyword">if</span>(method.getName().equals(<span class="string">"sellBooks"</span>))&#123;</span><br><span class="line">            <span class="keyword">int</span> invoke = (<span class="keyword">int</span>)method.invoke(realSubject, args);</span><br><span class="line">            System.out.println(<span class="string">"调用的是卖书的方法"</span>);</span><br><span class="line">            <span class="keyword">return</span> invoke ;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            String string = (String) method.invoke(realSubject,args) ;</span><br><span class="line">            System.out.println(<span class="string">"调用的是说话的方法"</span>);</span><br><span class="line">            <span class="keyword">return</span>  string ;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>d)调用端：TestMain.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Proxy;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 调用类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 22:09</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//真实对象</span></span><br><span class="line">        Subject realSubject =  <span class="keyword">new</span> RealSubject();</span><br><span class="line"></span><br><span class="line">        MyInvocationHandler myInvocationHandler = <span class="keyword">new</span> MyInvocationHandler(realSubject);</span><br><span class="line">        <span class="comment">//代理对象</span></span><br><span class="line">        Subject proxyClass = (Subject) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), <span class="keyword">new</span> Class[]&#123;Subject.class&#125;, myInvocationHandler);</span><br><span class="line"></span><br><span class="line">        proxyClass.sellBooks();</span><br><span class="line"></span><br><span class="line">        proxyClass.speak();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p> <a href="https://mp.weixin.qq.com/s?__biz=MzUxMzkyNDUyMQ==&amp;mid=2247483808&amp;idx=1&amp;sn=21614086cff9d3fa6b97b3887376d549&amp;chksm=f94c8d66ce3b0470220dfbf38db3878c9872ce6f25def858ed3196e1054998c8111c93b" target="_blank" rel="noopener">  参考地址</a></p>
-<h1 id="四、CgLib-动态代理"><a href="#四、CgLib-动态代理" class="headerlink" title="四、CgLib 动态代理"></a>四、CgLib 动态代理</h1><p><a href="http://www.runoob.com/w3cnote/cglibcode-generation-library-intro.html" target="_blank" rel="noopener">Cglib</a> 动态代理是针对代理的类, 动态生成一个子类, 然后子类覆盖代理类中的方法, 如果是private或是final类修饰的方法,则不会被重写。</p>
-<p>CGLIB是一个功能强大，高性能的代码生成包。它为没有实现接口的类提供代理，为JDK的动态代理提供了很好的补充。通常可以使用Java的动态代理创建代理，但当要代理的类没有实现接口或者为了更好的性能，CGLIB是一个好的选择。</p>
-<p>CGLIB作为一个开源项目，其代码托管在github，地址为：<a href="https://github.com/cglib/cglib" target="_blank" rel="noopener">https://github.com/cglib/cglib</a></p>
-<p>需要代理的类:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 22:17</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Engineer</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 可以被代理</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eat</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"工程师正在吃饭"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// final 方法不会被生成的子类覆盖</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">work</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"工程师正在工作"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// private 方法不会被生成的子类覆盖</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">play</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"this engineer is playing game"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>CGLIB 代理类:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.Enhancer;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.MethodInterceptor;</span><br><span class="line"><span class="keyword">import</span> net.sf.cglib.proxy.MethodProxy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 22:19</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CglibProxy</span> <span class="keyword">implements</span> <span class="title">MethodInterceptor</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> Object target;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CglibProxy</span><span class="params">(Object target)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.target = target;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">intercept</span><span class="params">(Object o, Method method, Object[] objects, MethodProxy methodProxy)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"###   before invocation"</span>);</span><br><span class="line">        Object result = method.invoke(target, objects);</span><br><span class="line">        System.out.println(<span class="string">"###   end invocation"</span>);</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getProxy</span><span class="params">(Object target)</span> </span>&#123;</span><br><span class="line">        Enhancer enhancer = <span class="keyword">new</span> Enhancer();</span><br><span class="line">        <span class="comment">// 设置需要代理的对象</span></span><br><span class="line">        enhancer.setSuperclass(target.getClass());</span><br><span class="line">        <span class="comment">// 设置代理人</span></span><br><span class="line">        enhancer.setCallback(<span class="keyword">new</span> CglibProxy(target));</span><br><span class="line">        <span class="keyword">return</span> enhancer.create();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试方法:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CglibMainTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 生成 Cglib 代理类</span></span><br><span class="line">        Engineer engineerProxy = (Engineer) CglibProxy.getProxy(<span class="keyword">new</span> Engineer());</span><br><span class="line">        <span class="comment">// 调用相关方法</span></span><br><span class="line">        engineerProxy.eat();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>运行结果:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">###   before invocation</span><br><span class="line">工程师正在吃饭</span><br><span class="line">###   end invocation</span><br></pre></td></tr></table></figure>
-          
+          [TOC]
+一、代理模式在代理模式（Proxy Pattern）中，一个类代表另一个类的功能。这种类型的设计模式属于结构型模式。
+在代理模式中，我们创建具有现有对象的对象，以便向外界提供功能接口。
+应用实例： 
+1、Windows 里面的快捷方式。 
+2、猪八戒去找高翠兰结果是孙悟空变的，可以这样理
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/12/03/设计模式（五）-代理模式（Proxy-Pattern）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -983,26 +831,16 @@
       
         
           
-            <h1 id="一、原型模式"><a href="#一、原型模式" class="headerlink" title="一、原型模式"></a>一、原型模式</h1><p>原型模式（Prototype Pattern）是用于创建重复的对象，同时又能保证性能。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
-<p>这种模式是实现了一个原型接口，该接口用于创建当前对象的克隆。当直接创建对象的代价比较大时，则采用这种模式。例如，一个对象需要在一个高代价的数据库操作之后被创建。我们可以缓存该对象，在下一个请求时返回它的克隆，在需要的时候更新数据库，以此来减少数据库调用。</p>
-<h1 id="二、实现"><a href="#二、实现" class="headerlink" title="二、实现"></a>二、实现</h1><p>java中的克隆需要实现 java.lang.Cloneable 接口</p>
-<h2 id="浅克隆"><a href="#浅克隆" class="headerlink" title="浅克隆"></a>浅克隆</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 20:40</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Prototype</span> <span class="keyword">implements</span> <span class="title">Cloneable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    String name;</span><br><span class="line"></span><br><span class="line">    Parameter parameter;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Parameter <span class="title">getParameter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> parameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setParameter</span><span class="params">(Parameter parameter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.parameter = parameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Object <span class="title">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.clone();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 20:40</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Parameter</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 21:00</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CloneTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        Prototype p = <span class="keyword">new</span> Prototype();</span><br><span class="line">        p.setName(<span class="string">"张三"</span>);</span><br><span class="line">        Parameter parameter = <span class="keyword">new</span> Parameter();</span><br><span class="line">        parameter.setName(<span class="string">"测试一"</span>);</span><br><span class="line">        p.setParameter(parameter);</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"原型---------------------------------"</span>);</span><br><span class="line">        System.out.println(p.getName() + <span class="string">"|"</span> + p.getParameter().getName() + <span class="string">"|"</span> + p.getParameter());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Prototype obj = (Prototype) p.clone();</span><br><span class="line">            System.out.println(<span class="string">"浅克隆后--------------------------"</span>);</span><br><span class="line">            System.out.println(obj.getName() + <span class="string">"|"</span> + obj.getParameter().getName() + <span class="string">"|"</span> + obj.getParameter());</span><br><span class="line"></span><br><span class="line">            obj.setName(<span class="string">"李四"</span>);</span><br><span class="line">            obj.getParameter().setName(<span class="string">"测试二"</span>);</span><br><span class="line">            System.out.println(<span class="string">"修改浅克隆对象后------------------"</span>);</span><br><span class="line">            System.out.println(p.getName() + <span class="string">"|"</span> + p.getParameter().getName() + <span class="string">"|"</span> + p.getParameter());</span><br><span class="line">            System.out.println(obj.getName() + <span class="string">"|"</span> + obj.getParameter().getName() + <span class="string">"|"</span> + obj.getParameter());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">原型---------------------------------</span><br><span class="line">张三|测试一|com.yanzhaoyao.pattern.prototype.simple.Parameter@<span class="number">4554617</span>c</span><br><span class="line">浅克隆后--------------------------</span><br><span class="line">张三|测试一|com.yanzhaoyao.pattern.prototype.simple.Parameter@<span class="number">4554617</span>c</span><br><span class="line">修改浅克隆对象后------------------</span><br><span class="line">张三|测试二|com.yanzhaoyao.pattern.prototype.simple.Parameter@<span class="number">4554617</span>c</span><br><span class="line">李四|测试二|com.yanzhaoyao.pattern.prototype.simple.Parameter@<span class="number">4554617</span>c</span><br></pre></td></tr></table></figure>
-<p>克隆后的对象，成员变量 parameter，与原对象的成员变量parameter为同一对象（地址引用相同）。 </p>
-<p>我们修改克隆后的对象的属性时，原型对象的属性也跟着变了，所谓的<strong>浅克隆</strong>，这不是我们想要的。看看下面的深克隆</p>
-<h2 id="深克隆"><a href="#深克隆" class="headerlink" title="深克隆"></a>深克隆</h2><p>只要修改<strong>Prototype.java</strong>的clone方法即可</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/3 20:40</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Prototype</span> <span class="keyword">implements</span> <span class="title">Cloneable</span>, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    String name;</span><br><span class="line"></span><br><span class="line">    Parameter parameter;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Parameter <span class="title">getParameter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> parameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setParameter</span><span class="params">(Parameter parameter)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.parameter = parameter;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> Object <span class="title">clone</span><span class="params">()</span> <span class="keyword">throws</span> CloneNotSupportedException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.deepClone();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">deepClone</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"></span><br><span class="line">            ByteArrayOutputStream bos = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">            ObjectOutputStream oos = <span class="keyword">new</span> ObjectOutputStream(bos);</span><br><span class="line">            oos.writeObject(<span class="keyword">this</span>);</span><br><span class="line"></span><br><span class="line">            ByteArrayInputStream bis = <span class="keyword">new</span> ByteArrayInputStream(bos.toByteArray());</span><br><span class="line">            ObjectInputStream ois = <span class="keyword">new</span> ObjectInputStream(bis);</span><br><span class="line"></span><br><span class="line">            Prototype copy = (Prototype) ois.readObject();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> copy;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当然Parameter也要实现序列化接口</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Parameter</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br></pre></td></tr></table></figure>
-<p>测试代码不变，输出结果</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">原型---------------------------------</span><br><span class="line">张三|测试一|com.yanzhaoyao.pattern.prototype.deep.Parameter@4554617c</span><br><span class="line">浅克隆后--------------------------</span><br><span class="line">张三|测试一|com.yanzhaoyao.pattern.prototype.deep.Parameter@7b23ec81</span><br><span class="line">修改浅克隆对象后------------------</span><br><span class="line">张三|测试一|com.yanzhaoyao.pattern.prototype.deep.Parameter@4554617c</span><br><span class="line">李四|测试二|com.yanzhaoyao.pattern.prototype.deep.Parameter@7b23ec81</span><br></pre></td></tr></table></figure>
-<p>可见，我们修改克隆后的对象也不会影响原来的原型对象。这就是<strong>深克隆</strong></p>
-
-          
+          一、原型模式原型模式（Prototype Pattern）是用于创建重复的对象，同时又能保证性能。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。
+这种模式是实现了一个原型接口，该接口用于创建当前对象的克隆。当直接创建对象的代价比较大时，则采用这种模式。例如，一个对象需要在一个高代
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/12/03/设计模式（四）-原型模式（Prototype-Pattern）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1177,137 +1015,17 @@
       
         
           
-            <p>[TOC]</p>
-<h1 id="一、单例模式"><a href="#一、单例模式" class="headerlink" title="一、单例模式"></a>一、单例模式</h1><p>单例模式（Singleton Pattern）是 Java 中最简单的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
-<p>这种模式涉及到一个单一的类，该类负责创建自己的对象，同时确保只有单个对象被创建。这个类提供了一种访问其唯一的对象的方式，可以直接访问，不需要实例化该类的对象。</p>
-<p><strong>注意：</strong></p>
-<ul>
-<li>1、单例类只能有一个实例。</li>
-<li>2、单例类必须自己创建自己的唯一实例。</li>
-<li>3、单例类必须给所有其他对象提供这一实例。</li>
-</ul>
-<h1 id="二、实现"><a href="#二、实现" class="headerlink" title="二、实现"></a>二、实现</h1><p>通常单例模式在<a href="https://baike.baidu.com/item/Java%E8%AF%AD%E8%A8%80" target="_blank" rel="noopener">Java语言</a>中，有以下构建方式：</p>
-<ul>
-<li>饿汉方式。指全局的单例实例在类装载时构建。</li>
-<li>懒汉方式。指全局的单例实例在第一次被使用时构建。</li>
-<li>静态内部类。利用静态内部类的特性：静态内部类在外部类对象初始化前加载。</li>
-<li>注册登记式。用一个Map通过key维护单一实例。</li>
-</ul>
-<h2 id="1、饿汉式"><a href="#1、饿汉式" class="headerlink" title="1、饿汉式"></a>1、饿汉式</h2><p>饿的意思就是要吃，类装载时构实例</p>
-<p>优点：天生的线程安全，比较简单</p>
-<p>缺点：可能浪费资源</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 饿汉式单例</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 11:37</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Hunger</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//构造函数私有化，保证外界不能实例化</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Hunger</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//全局的单例实例在类装载时构建</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Hunger hunger = <span class="keyword">new</span> Hunger();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Hunger <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> hunger;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>不测试了，比较简单</p>
-<h2 id="2、懒汉式，线程不安全"><a href="#2、懒汉式，线程不安全" class="headerlink" title="2、懒汉式，线程不安全"></a>2、懒汉式，线程不安全</h2><p>懒的意思，就是需要的时候在实例化，延迟加载。比较懒。</p>
-<p>在多线程的环境下，getInstance（）可能会有多个线程同时进入到if语句块中，造成lazy不能保持唯一的实例。</p>
-<p>因此破坏了单例模式，所谓的线程不安全</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 懒汉式单例(线程不安全)</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 17:39</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lazy</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//构造函数私有化，确保外界无法通过new 实例化</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Lazy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Lazy lazy;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Lazy <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (lazy == <span class="keyword">null</span>) &#123;</span><br><span class="line">            lazy = <span class="keyword">new</span> Lazy();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> lazy;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 懒汉式，线程不安全</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 17:51</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LazyTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> COUNT = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//懒汉式，线程不安全</span></span><br><span class="line"><span class="comment">//        Lazy lazy = new Lazy();//此处不能通过new 来实例化，因为构造函数私有化</span></span><br><span class="line">        CyclicBarrier cyclicBarrier = <span class="keyword">new</span> CyclicBarrier(COUNT);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; COUNT; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        cyclicBarrier.await();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (BrokenBarrierException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                    Lazy lazy = Lazy.getInstance();</span><br><span class="line">                    System.out.println(lazy);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果，出现了多个不同的实例</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">7449</span>d4b</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">3f</span>0e4bd</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">3f</span>0e4bd</span><br><span class="line">......</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">3f</span>0e4bd</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">3f</span>0e4bd</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">1</span>aa42512</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">3f</span>0e4bd</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy@<span class="number">3f</span>0e4bd</span><br></pre></td></tr></table></figure>
-<h2 id="3、懒汉式，线程安全"><a href="#3、懒汉式，线程安全" class="headerlink" title="3、懒汉式，线程安全"></a>3、懒汉式，线程安全</h2><p>此种方式通过添加关键字<strong>synchronized</strong>实现了线程安全，但这种方式效率极低，因为多线程环境下，绝大部分时间式不需要同步的</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 懒汉式单例(线程安全)</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 17:39</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lazy2</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//构造函数私有化，确保外界无法通过new 实例化</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Lazy2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Lazy2 lazy;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Lazy2 <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (lazy == <span class="keyword">null</span>) &#123;</span><br><span class="line">            lazy = <span class="keyword">new</span> Lazy2();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> lazy;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<p>测试</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yanzhaoyao.patter.singleton;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.CountDownLatch;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 懒汉式，线程安全</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 17:51</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Lazy2Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> COUNT = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        </span><br><span class="line">        CyclicBarrier cyclicBarrier = <span class="keyword">new</span> CyclicBarrier(COUNT);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; COUNT; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        cyclicBarrier.await();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (BrokenBarrierException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                    Lazy2 lazy = Lazy2.getInstance();</span><br><span class="line">                    System.out.println(lazy);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">com.yanzhaoyao.patter.singleton.Lazy2@774c0c70</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy2@774c0c70</span><br><span class="line">......//省略中间的</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy2@774c0c70</span><br><span class="line">com.yanzhaoyao.patter.singleton.Lazy2@774c0c70</span><br></pre></td></tr></table></figure>
-<h2 id="4、懒汉式，线程安全，（DCL）"><a href="#4、懒汉式，线程安全，（DCL）" class="headerlink" title="4、懒汉式，线程安全，（DCL）"></a>4、懒汉式，线程安全，（DCL）</h2><p>（Double Check Lock）双重校验锁机制，为处理以上版本非延迟加载方式瓶颈问题，我们需要对 lazy 进行第二次检查，目的是避开过多的同步（因为这里的同步只需在第一次创建实例时才同步，一旦创建成功，以后获取实例时就不需要获取锁了），但在Java中行不通，<strong>因为同步块外面的if (lazy == null)可能看到已存在，但不完整的实例。</strong></p>
-<p>(解释一下</p>
-<p>这行代码  <strong>lazy = new LazyDCL();</strong></p>
-<p><code>它可以分解成三个操作，</code></p>
-<p><code>【伪代码】3</code></p>
-<p><code>1.memory = allocate()</code></p>
-<p><code>2.createInstance(memory)</code></p>
-<p><code>3.resource = memory</code></p>
-<p><code>其中1,2指令有数据依赖，所以不会被重排序。而2,3指令没有数据依赖，如果没有volatile关键字，可能会被重排序。</code></p>
-<p><code>那么假如2，3执行顺序进行了调换。</code></p>
-<p><code>那么就有可能发生，假设A,B线程都即将执行getResource操作，目前在A线程，</code></p>
-<p><code>首先A线程第一次判断resource是否为null，结果为null，那么加锁进入执行创建对象的这三步。</code></p>
-<p><code>假设执行了上述的1，3后，发生了调度，B开始执行。</code></p>
-<p><code>**此时它面临的状态是，判断resource是否为null，结果不为null.因为刚才A执行了3已经给resource赋值了。**</code></p>
-<p><code>**那么B会认为resource已经初始化完成，它可能要对这个对象进行一些操作，但是事实上A还没有执行2操作，resource对象还没有初始化完成。**</code></p>
-<p><code>这样运行下去可能会产生异常，风险由此产生。</code></p>
-<p><a href="https://www.cnblogs.com/vete-l/p/7107700.html" target="_blank" rel="noopener">参考这里</a>)</p>
-<p>Jdk5.0以后版本若lazy为<strong>volatile</strong>则可行（禁止指令重排）：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 懒汉式单例(线程安全) DCL双重校验锁，效率较高</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 17:39</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LazyDCL</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//构造函数私有化，确保外界无法通过new 实例化</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">LazyDCL</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> <span class="keyword">static</span> LazyDCL lazy;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> LazyDCL <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (lazy == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (LazyDCL.class) &#123;</span><br><span class="line">                <span class="keyword">if</span> (lazy == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    lazy = <span class="keyword">new</span> LazyDCL();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> lazy;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>后面会对所有的单例实现方式进行性能测试</p>
-<h2 id="5、静态内部类"><a href="#5、静态内部类" class="headerlink" title="5、静态内部类"></a>5、静态内部类</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 单例模式-静态内部类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 19:09</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticSingleton</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">StaticSingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//只会初始化一次</span></span><br><span class="line">        System.out.println(<span class="string">"StaticSingleton()"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> StaticSingleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> LazyHolder.LAZY;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//默认不加载,在外部类加载时，该静态内部类仅加载到内存中一次</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">LazyHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> StaticSingleton LAZY = <span class="keyword">new</span> StaticSingleton();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 19:20</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> COUNT = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; COUNT; i++) &#123;</span><br><span class="line">            StaticSingleton.getInstance();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果：（一调用了一次构造函数）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">StaticSingleton()</span><br></pre></td></tr></table></figure>
-<h2 id="6、注册登记式"><a href="#6、注册登记式" class="headerlink" title="6、注册登记式"></a>6、注册登记式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 单例模式-注册登记式</span></span><br><span class="line"><span class="comment"> * 登记式单例实际上维护的是一组单例类的实例，将这些实例存储到一个Map(登记簿)</span></span><br><span class="line"><span class="comment"> * 中，对于已经登记过的单例，则从工厂直接返回，对于没有登记的，则先登记，而后</span></span><br><span class="line"><span class="comment"> * 返回</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 19:32</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RegSingleton</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 登记簿，用来存放所有登记的实例</span></span><br><span class="line"><span class="comment">     * 用ConcurrentHashMap来维护映射关系，这是线程安全的</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, Object&gt; map = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//在类加载时添加一个实例到登记簿</span></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        RegSingleton singleton = <span class="keyword">new</span> RegSingleton();</span><br><span class="line">        map.put(singleton.getClass().getName(), singleton);<span class="comment">//运用了反射</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 受保护的默认构造方法</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="title">RegSingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 静态工厂方法，返回指定登记对象的唯一实例</span></span><br><span class="line"><span class="comment">     * 对于已经登记的直接取出返回，对于还未登记的先登记，然后取出返回</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getInstance</span><span class="params">(String className)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (className == <span class="keyword">null</span>) &#123;</span><br><span class="line">            className = RegSingleton.class.getName();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//如果没有登记就用反射new一个</span></span><br><span class="line">        <span class="keyword">if</span> (!map.containsKey(className)) &#123;</span><br><span class="line">            <span class="comment">//没有登记就进入同步块</span></span><br><span class="line">            <span class="keyword">synchronized</span>(RegSingleton.class)&#123;</span><br><span class="line">                <span class="comment">//再次检测是否登记</span></span><br><span class="line">                <span class="keyword">if</span> (!map.containsKey(className)) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="comment">//实例化对象</span></span><br><span class="line">                        map.put(className,Class.forName(className).newInstance());</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (InstantiationException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> map.get(className);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>测试</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 22:41</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RegSingletonTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> CyclicBarrier cyclicBarrier=<span class="keyword">new</span> CyclicBarrier(<span class="number">1000</span>);</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;<span class="number">1000</span> ; i++) &#123;</span><br><span class="line">            <span class="keyword">int</span> n = i;</span><br><span class="line">            <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">                System.out.println(<span class="string">"线程"</span>+ n +<span class="string">"准备就绪"</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    cyclicBarrier.await();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (BrokenBarrierException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                System.out.println(RegSingleton.getInstance(<span class="string">"com.yanzhaoyao.patter.singleton.register.ClassA"</span>));</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果是线程安全的（ClassA是一个空类，里面什么也没有）</p>
-<p>注册登记式单例<a href="https://www.cnblogs.com/twoheads/p/9723543.html" target="_blank" rel="noopener">参考这里</a></p>
-<h1 id="三、测试各种方式的效率"><a href="#三、测试各种方式的效率" class="headerlink" title="三、测试各种方式的效率"></a>三、测试各种方式的效率</h1><p>我们来测试一下不同方式的效率：</p>
-<p>现在我们用200个线程，每个线程分别 创建一百万个各种实例，所耗费的时间</p>
-<p>代码如下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 效率测试</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/1 17:51</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EfficientTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> THREAD_COUNT = <span class="number">200</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> COUNT = <span class="number">1000000</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line"></span><br><span class="line">        CountDownLatch count = <span class="keyword">new</span> CountDownLatch(THREAD_COUNT);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">long</span> start = System.currentTimeMillis();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; THREAD_COUNT; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">                <span class="meta">@Override</span></span><br><span class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; COUNT; j++) &#123;</span><br><span class="line">                            Hunger.getInstance();</span><br><span class="line"><span class="comment">//                            Lazy.getInstance();</span></span><br><span class="line"><span class="comment">//                            Lazy2.getInstance();</span></span><br><span class="line"><span class="comment">//                            LazyDCL.getInstance();</span></span><br><span class="line"><span class="comment">//                            StaticSingleton.getInstance();</span></span><br><span class="line">                        &#125;</span><br><span class="line">                        count.countDown();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125;</span><br><span class="line">        count.await();</span><br><span class="line">        <span class="keyword">long</span> end = System.currentTimeMillis();</span><br><span class="line">        System.out.println(<span class="string">"总共耗时:"</span> + (end - start) + <span class="string">"毫秒"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>结果比较（供参考）</p>
-<table>
-<thead>
-<tr>
-<th>单例模式类型</th>
-<th>每次耗时</th>
-<th>平均耗时</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>饿汉式</td>
-<td>783ms、767ms、722ms</td>
-<td>757ms</td>
-<td></td>
-</tr>
-<tr>
-<td>懒汉式（线程不安全）</td>
-<td>1136ms、2760ms、715ms</td>
-<td>2305ms</td>
-<td>这个线程不安全，没什么意义</td>
-</tr>
-<tr>
-<td>懒汉式（线程安全）</td>
-<td>24844ms、30281ms、27018ms</td>
-<td>27381ms</td>
-<td>这个就比较耗时了</td>
-</tr>
-<tr>
-<td>懒汉式（线程安全 DCL）</td>
-<td>790ms、1861ms、1198ms</td>
-<td>1283ms</td>
-<td></td>
-</tr>
-<tr>
-<td>静态内部类式</td>
-<td>750ms、386ms、479ms</td>
-<td>538ms</td>
-</tr>
-</tbody>
-</table>
-<h1 id="反射和序列化都可以破坏单例"><a href="#反射和序列化都可以破坏单例" class="headerlink" title="反射和序列化都可以破坏单例"></a>反射和序列化都可以破坏单例</h1><h2 id="反射"><a href="#反射" class="headerlink" title="反射"></a>反射</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 反射测试</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/2 22:41</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReflactTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException </span>&#123;</span><br><span class="line">        <span class="comment">// 正常测试</span></span><br><span class="line">        System.out.println(LazyDCL.getInstance());</span><br><span class="line">        System.out.println(LazyDCL.getInstance());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//反射测试</span></span><br><span class="line">        Class&lt;?&gt; lazyClass = LazyDCL.class;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//通过反射拿到私有的构造方法</span></span><br><span class="line">        Constructor c = lazyClass.getDeclaredConstructor(<span class="keyword">null</span>);</span><br><span class="line">        <span class="comment">//设置构造函数的访问权限，必须有</span></span><br><span class="line">        c.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">        System.out.println(c.newInstance());</span><br><span class="line">        System.out.println(c.newInstance());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">com.yanzhaoyao.patter.singleton.lazy.Lazy@4554617c</span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.Lazy@4554617c</span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.Lazy@74a14482</span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.Lazy@1540e19d</span><br></pre></td></tr></table></figure>
-<p>破坏了单例，解决办法</p>
-<p>在调用构造方法时，先判断实例是否存在，如果已存在则不允许再创建新的对象</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//构造函数私有化，确保外界无法通过new 实例化</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">LazyDCL</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (LazyDCL.class)&#123;</span><br><span class="line">        <span class="keyword">if</span>(lazy != <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"单例已被侵犯"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>在此测试结果</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@<span class="number">4554617</span>c</span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@<span class="number">4554617</span>c</span><br><span class="line">Exception in thread <span class="string">"main"</span> java.lang.reflect.InvocationTargetException</span><br><span class="line">	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)</span><br><span class="line">	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:<span class="number">62</span>)</span><br><span class="line">	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:<span class="number">45</span>)</span><br><span class="line">	at java.lang.reflect.Constructor.newInstance(Constructor.java:<span class="number">423</span>)</span><br><span class="line">	at com.yanzhaoyao.patter.singleton.ReflactTest.main(ReflactTest.java:<span class="number">27</span>)</span><br><span class="line">Caused by: java.lang.RuntimeException: 单例已被侵犯</span><br><span class="line">	at com.yanzhaoyao.patter.singleton.lazy.LazyDCL.&lt;init&gt;(LazyDCL.java:<span class="number">14</span>)</span><br><span class="line">	... <span class="number">5</span> more</span><br></pre></td></tr></table></figure>
-<h2 id="反序列化"><a href="#反序列化" class="headerlink" title="反序列化"></a>反序列化</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 反序列化 破坏单例</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/12/2 23:03</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SeriableTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException </span>&#123;</span><br><span class="line">        <span class="comment">// 正常测试</span></span><br><span class="line">        System.out.println(LazyDCL.getInstance());</span><br><span class="line">        System.out.println(LazyDCL.getInstance());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//反序列化</span></span><br><span class="line">        ObjectOutputStream oos = <span class="keyword">new</span> ObjectOutputStream(<span class="keyword">new</span> FileOutputStream(<span class="string">"D:\\a.txt"</span>));</span><br><span class="line">        oos.writeObject(LazyDCL.getInstance());</span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        ObjectInputStream ois = <span class="keyword">new</span> ObjectInputStream(<span class="keyword">new</span> FileInputStream(<span class="string">"D:\\a.txt"</span>));</span><br><span class="line">        LazyDCL lazyDCL = (LazyDCL) ois.readObject();</span><br><span class="line">        ois.close();</span><br><span class="line">        System.out.println(lazyDCL);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>注意LazyDCL要实现序列化接口</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LazyDCL</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br></pre></td></tr></table></figure>
-<p>输出结果如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c</span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c</span><br><span class="line"></span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@568db2f2</span><br></pre></td></tr></table></figure>
-<p><strong>反序列化的解决方法</strong></p>
-<p>添加一个Object类型的回调方法readResolve()</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LazyDCL</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">    ....</span><br><span class="line">    <span class="comment">// 在反序列化时，直接调用返回对象，而不是返回新的对象</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> Object <span class="title">readResolve</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> lazy;</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出结果</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c</span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c</span><br><span class="line"></span><br><span class="line">com.yanzhaoyao.patter.singleton.lazy.LazyDCL@4554617c</span><br></pre></td></tr></table></figure>
-
-          
+          [TOC]
+一、单例模式单例模式（Singleton Pattern）是 Java 中最简单的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。
+这种模式涉及到一个单一的类，该类负责创建自己的对象，同时确保只有单个对象被创建。这个类提供了一种访问其唯一的对象的方式，可以
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/12/01/设计模式（三）-单例模式（Singleton-Pattern）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1482,35 +1200,17 @@
       
         
           
-            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>下面例子中手机、手机壳、耳机为产品，华为，苹果为工厂。</p>
-<h1 id="简单工厂模式"><a href="#简单工厂模式" class="headerlink" title="简单工厂模式"></a>简单工厂模式</h1><p>简介：创建型模式，简单工厂模式又叫做静态工厂方法（StaticFactory Method）模式，但不属于 23 种设计模式之一。简单工厂模式的实质是由一个工厂类根据传入的参数，动态决定应该创建哪一个产品类。</p>
-<p>比如下图中的手机工厂，专业生产手机，给参数 HUAWEI，生产华为手机，给参数 IPhone，生产苹果。</p>
-<p><img src="/2018/11/30/设计模式之-简单工厂-工厂-抽象工厂/1543583962727.png" alt="1543583962727"></p>
-<h3 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h3><p>工厂模式也就是手机工厂是个父类，有生产手机这个接口。</p>
-<p>华为手机工厂，苹果工厂继承它，可以分别生产华为手机，苹果手机。</p>
-<p>生产哪种手机不再由参数决定，而是创建手机工厂时，由华为工厂、苹果工厂创建。</p>
-<p>后续直接调用手机工厂.生产手机后发布()即可</p>
-<p><img src="/2018/11/30/设计模式之-简单工厂-工厂-抽象工厂/1543587764846.png" alt="1543587764846"></p>
-<h3 id="抽象工厂模式"><a href="#抽象工厂模式" class="headerlink" title="抽象工厂模式"></a>抽象工厂模式</h3><p>抽象工厂模式也就是不仅生产手机，同时生产手机壳。</p>
-<p>也就是 厂商是个父类，有生产手机，生产手机壳两个接口。</p>
-<p>华为工厂，苹果工厂继承它，可以分别生产华为手机+华为手机壳，和苹果手机+苹果手机壳。</p>
-<p>创建工厂时，由手机工厂创建。</p>
-<p>后续工厂.生产手机()则生产华为手机，工厂.生产手机壳()则生产华为手机壳。</p>
-<p><img src="/2018/11/30/设计模式之-简单工厂-工厂-抽象工厂/1543587641360.png" alt="1543587641360"></p>
-<blockquote>
-<p>在抽象工厂模式中，假设我们需要增加一个工厂</p>
-</blockquote>
-<p>假设我们增加Vivo，则我们需要增加Vivo工厂，和华为工厂一样，继承 AbstractFactory厂商。之后创建Vivo手机，继承手机类（Mobile）。创建Vivo手机壳，继承手机壳类（MobileShell）即可。</p>
-<p><img src="/2018/11/30/设计模式之-简单工厂-工厂-抽象工厂/1543588341133.png" alt="1543588341133"></p>
-<blockquote>
-<p>在抽象工厂模式中，假设我们需要增加一个产品</p>
-</blockquote>
-<p>假设我们增加耳机这个产品，则首先我们需要增加耳机这个父类，再加上华为耳机，苹果耳机这两个子类。</p>
-<p>之后在AbstractFactory厂商这个父类中，增加生产耳机的接口。最后在华为工厂，苹果工厂这两个类中，分别实现生产华为耳机，苹果耳机的功能。</p>
-<p><img src="/2018/11/30/设计模式之-简单工厂-工厂-抽象工厂/1543589659965.png" alt="1543589659965"></p>
-<p>以上UML图由<a href="https://www.processon.com" target="_blank" rel="noopener">onprocess</a>在线绘图所制</p>
-
-          
+          前言下面例子中手机、手机壳、耳机为产品，华为，苹果为工厂。
+简单工厂模式简介：创建型模式，简单工厂模式又叫做静态工厂方法（StaticFactory Method）模式，但不属于 23 种设计模式之一。简单工厂模式的实质是由一个工厂类根据传入的参数，动态决定应该创建哪一个产品类。
+比如下图中的手机工
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/30/设计模式之-简单工厂-工厂-抽象工厂/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1685,57 +1385,16 @@
       
         
           
-            <h1 id="抽象工厂模式"><a href="#抽象工厂模式" class="headerlink" title="抽象工厂模式"></a>抽象工厂模式</h1><p>抽象工厂模式（Abstract Factory Pattern）是围绕一个超级工厂创建其他工厂。该超级工厂又称为其他工厂的工厂。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
-<p>在抽象工厂模式中，接口是负责创建一个相关对象的工厂，不需要显式指定它们的类。每个生成的工厂都能按照工厂模式提供对象。</p>
-<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p><strong>意图：</strong>提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的类。</p>
-<p><strong>主要解决：</strong>主要解决接口选择的问题。</p>
-<p><strong>何时使用：</strong>系统的产品有多于一个的产品族，而系统只消费其中某一族的产品。</p>
-<p><strong>如何解决：</strong>在一个产品族里面，定义多个产品。</p>
-<p><strong>关键代码：</strong>在一个工厂里聚合多个同类产品。</p>
-<p><strong>应用实例：</strong>工作了，为了参加一些聚会，肯定有两套或多套衣服吧，比如说有商务装（成套，一系列具体产品）、时尚装（成套，一系列具体产品），甚至对于一个家庭来说，可能有商务女装、商务男装、时尚女装、时尚男装，这些也都是成套的，即一系列具体产品。假设一种情况（现实中是不存在的，要不然，没法进入共产主义了，但有利于说明抽象工厂模式），在您的家中，某一个衣柜（具体工厂）只能存放某一种这样的衣服（成套，一系列具体产品），每次拿这种成套的衣服时也自然要从这个衣柜中取出了。用 OO 的思想去理解，所有的衣柜（具体工厂）都是衣柜类的（抽象工厂）某一个，而每一件成套的衣服又包括具体的上衣（某一具体产品），裤子（某一具体产品），这些具体的上衣其实也都是上衣（抽象产品），具体的裤子也都是裤子（另一个抽象产品）。</p>
-<p><strong>优点：</strong>当一个产品族中的多个对象被设计成一起工作时，它能保证客户端始终只使用同一个产品族中的对象。</p>
-<p><strong>缺点：</strong>产品族扩展非常困难，要增加一个系列的某一产品，既要在抽象的 Creator 里加代码，又要在具体的里面加代码。</p>
-<p><strong>使用场景：</strong> 1、QQ 换皮肤，一整套一起换。 2、生成不同操作系统的程序。</p>
-<p><strong>注意事项：</strong>产品族难扩展，产品等级易扩展。</p>
-<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>我们将创建 <em>IMobilePhone</em> 和 <em>IMobilePhoneShell</em> 接口和实现这些接口的实体类。下一步是创建抽象工厂类 <em>AbstractFactory</em>。接着定义工厂类 <em>PhoneFactory</em> 和 <em>PhoneShellFactory</em>，这两个工厂类都是扩展了 <em>AbstractFactory</em>。然后创建一个工厂创造器/生成器类 <em>FactoryProducer</em>。</p>
-<p><em>AbstractFactoryPatternDemo</em>，我们的演示类使用 <em>FactoryProducer</em> 来获取 <em>AbstractFactory</em> 对象。它将向 <em>AbstractFactory</em> 传递形状信息 <em>IMobilePhone</em>（<em>HUAWEI / Iphone / Vivo</em>），以便获取它所需对象的类型。同时它还向 <em>AbstractFactory</em> 传递颜色信息 <em>Color</em>（<em>Red / Green / Blue</em>），以便获取它所需对象的类型。</p>
-<h3 id="步骤-1"><a href="#步骤-1" class="headerlink" title="步骤 1"></a>步骤 1</h3><p>为手机创建一个接口。</p>
-<p><strong>IMobilePhone.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 手机接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  发布手机</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-2"><a href="#步骤-2" class="headerlink" title="步骤 2"></a>步骤 2</h3><p>创建实现接口的实体类。</p>
-<p><strong>HUAWEI.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HUAWEI</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：HUAWEI Mate 20"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>IPhone.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Iphone</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：Iphone XS"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>vivo.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Vivo</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：vivo X23"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-3"><a href="#步骤-3" class="headerlink" title="步骤 3"></a>步骤 3</h3><p>为手机壳创建一个接口。</p>
-<p><strong>IMobilePhoneShell.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 手机壳接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IMobilePhoneShell</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  手机壳颜色</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">color</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤4"><a href="#步骤4" class="headerlink" title="步骤4"></a>步骤4</h3><p>创建实现接口的实体类。</p>
-<p><strong>Red.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Red</span> <span class="keyword">implements</span> <span class="title">IMobilePhoneShell</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">color</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"红色手机壳"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Green.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Green</span> <span class="keyword">implements</span> <span class="title">IMobilePhoneShell</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">color</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"绿色手机壳"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Blue.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Blue</span> <span class="keyword">implements</span> <span class="title">IMobilePhoneShell</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">color</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"蓝色手机壳"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-5"><a href="#步骤-5" class="headerlink" title="步骤 5"></a>步骤 5</h3><p>为 IMobilePhone和 IMobilePhoneShell 对象创建抽象类来获取工厂。</p>
-<p><strong>AbstractFactory.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractFactory</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> IMobilePhone <span class="title">getPhone</span><span class="params">(String trademark)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> IMobilePhoneShell <span class="title">getPhoneShell</span><span class="params">(String color)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-6"><a href="#步骤-6" class="headerlink" title="步骤 6"></a>步骤 6</h3><p>创建扩展了 AbstractFactory 的工厂类，基于给定的信息生成实体类的对象。</p>
-<p><strong>PhoneFactory.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneFactory</span> <span class="keyword">extends</span> <span class="title">AbstractFactory</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhone <span class="title">getPhone</span><span class="params">(String trademark)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(trademark == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademark.equalsIgnoreCase(<span class="string">"iphone"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Iphone();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademark.equalsIgnoreCase(<span class="string">"huawei"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> HUAWEI();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademark.equalsIgnoreCase(<span class="string">"vivo"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Vivo();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhoneShell <span class="title">getPhoneShell</span><span class="params">(String color)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>PhoneShellFactory.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneShellFactory</span> <span class="keyword">extends</span> <span class="title">AbstractFactory</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhone <span class="title">getPhone</span><span class="params">(String trademark)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhoneShell <span class="title">getPhoneShell</span><span class="params">(String color)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(color == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(color.equalsIgnoreCase(<span class="string">"red"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Red();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(color.equalsIgnoreCase(<span class="string">"green"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Green();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(color.equalsIgnoreCase(<span class="string">"blue"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Blue();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-7"><a href="#步骤-7" class="headerlink" title="步骤 7"></a>步骤 7</h3><p>创建一个工厂创造器/生成器类，通过传递手机 或 手机壳信息来获取相应工厂。</p>
-<h2 id="FactoryProducer-java"><a href="#FactoryProducer-java" class="headerlink" title="FactoryProducer.java"></a>FactoryProducer.java</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FactoryProducer</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> AbstractFactory <span class="title">getFactory</span><span class="params">(String choice)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(choice.equalsIgnoreCase(<span class="string">"phone"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> PhoneFactory();</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(choice.equalsIgnoreCase(<span class="string">"phoneshell"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> PhoneShellFactory();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-8"><a href="#步骤-8" class="headerlink" title="步骤 8"></a>步骤 8</h3><p>使用 FactoryProducer 来获取 AbstractFactory，通过传递类型信息来获取实体类的对象。</p>
-<p><strong>AbstractFactoryPatternDemo.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractFactoryPatternDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//获取一个手机工厂</span></span><br><span class="line">        AbstractFactory phoneFactory = FactoryProducer.getFactory(<span class="string">"phone"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone iphone = phoneFactory.getPhone(<span class="string">"iphone"</span>);</span><br><span class="line">        iphone.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone huawei = phoneFactory.getPhone(<span class="string">"huawei"</span>);</span><br><span class="line">        huawei.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone vivo = phoneFactory.getPhone(<span class="string">"vivo"</span>);</span><br><span class="line">        vivo.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取一个手机壳工厂</span></span><br><span class="line">        AbstractFactory phoneShellFactory = FactoryProducer.getFactory(<span class="string">"phoneshell"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhoneShell phoneShell = phoneShellFactory.getPhoneShell(<span class="string">"red"</span>);</span><br><span class="line">        phoneShell.color();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhoneShell green = phoneShellFactory.getPhoneShell(<span class="string">"green"</span>);</span><br><span class="line">        green.color();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhoneShell blue = phoneShellFactory.getPhoneShell(<span class="string">"blue"</span>);</span><br><span class="line">        blue.color();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-9"><a href="#步骤-9" class="headerlink" title="步骤 9"></a>步骤 9</h3><p>执行程序，输出结果：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate 20</span><br><span class="line">发布：vivo X23</span><br><span class="line">红色手机壳</span><br><span class="line">绿色手机壳</span><br><span class="line">蓝色手机壳</span><br></pre></td></tr></table></figure>
-
-          
+          抽象工厂模式抽象工厂模式（Abstract Factory Pattern）是围绕一个超级工厂创建其他工厂。该超级工厂又称为其他工厂的工厂。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。
+在抽象工厂模式中，接口是负责创建一个相关对象的工厂，不需要显式指定它们的类。每个生成的工厂都
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/23/设计模式（二）-抽象工厂模式（Abstract Factory Pattern）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1910,45 +1569,19 @@
       
         
           
-            <p>[TOC]</p>
-<h1 id="1-工厂模式"><a href="#1-工厂模式" class="headerlink" title="1. 工厂模式"></a>1. 工厂模式</h1><p>工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
-<p>在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。</p>
-<h1 id="2-介绍"><a href="#2-介绍" class="headerlink" title="2. 介绍"></a>2. 介绍</h1><ul>
-<li><p><strong>意图：</strong>定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。</p>
-</li>
-<li><p><strong>主要解决：</strong>主要解决接口选择的问题。</p>
-</li>
-<li><p><strong>何时使用：</strong>我们明确地计划不同条件下创建不同实例时。</p>
-</li>
-<li><p><strong>如何解决：</strong>让其子类实现工厂接口，返回的也是一个抽象的产品。</p>
-</li>
-<li><p><strong>关键代码：</strong>创建过程在其子类执行。</p>
-</li>
-<li><p><strong>应用实例：</strong> 1、您需要一辆汽车，可以直接从工厂里面提货，而不用去管这辆汽车是怎么做出来的，以及这个汽车里面的具体实现。 2、Hibernate 换数据库只需换方言和驱动就可以。</p>
-</li>
-<li><p><strong>使用场景：</strong> 1、日志记录器：记录可能记录到本地硬盘、系统事件、远程服务器等，用户可以选择记录日志到什么地方。 2、数据库访问，当用户不知道最后系统采用哪一类数据库，以及数据库可能有变化时。 3、设计一个连接服务器的框架，需要三个协议，”POP3”、”IMAP”、”HTTP”，可以把这三个作为产品类，共同实现一个接口。</p>
-</li>
-<li><p><strong>注意事项：</strong>作为一种创建类模式，在任何需要生成复杂对象的地方，都可以使用工厂方法模式。有一点需要注意的地方就是复杂对象适合使用工厂模式，而简单对象，特别是只需要通过 new 就可以完成创建的对象，无需使用工厂模式。如果使用工厂模式，就需要引入一个工厂类，会增加系统的复杂度。</p>
-</li>
-</ul>
-<h1 id="3-实现"><a href="#3-实现" class="headerlink" title="3. 实现"></a>3. 实现</h1><p>假定我们现在要实现一个发布最新款式手机的功能，包含各种品牌（Iphone、HUAWEI、Vivo）等</p>
-<p><img src="/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/FactoryPattern.png" alt="FactoryPattern"></p>
-<h3 id="步骤-1-创建一个接口"><a href="#步骤-1-创建一个接口" class="headerlink" title="步骤 1 创建一个接口:"></a>步骤 1 创建一个接口:</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 手机接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  发布手机</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-2-创建实现接口的实体类。"><a href="#步骤-2-创建实现接口的实体类。" class="headerlink" title="步骤 2 创建实现接口的实体类。"></a>步骤 2 创建实现接口的实体类。</h3><p><strong>HUAWEI.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:05</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HUAWEI</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：HUAWEI Mate 20"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Iphone.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:06</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Iphone</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：Iphone XS"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>Vivo.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:06</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Vivo</span> <span class="keyword">implements</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"发布：vivo X23"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。"><a href="#步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。" class="headerlink" title="步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。"></a>步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。</h3><p><strong>PhoneFactory.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 手机工厂类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:10</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneFactory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhone <span class="title">getPhone</span><span class="params">(String trademaek)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(trademaek == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"iphone"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Iphone();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"huawei"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> HUAWEI();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"vivo"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Vivo();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。"><a href="#步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。" class="headerlink" title="步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。"></a>步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。</h3><p><strong>FactoryPatternDemo.java</strong></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:15</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FactoryPatternDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        PhoneFactory phoneFactory = <span class="keyword">new</span> PhoneFactory();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone iphone = phoneFactory.getPhone(<span class="string">"iphone"</span>);</span><br><span class="line">        iphone.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone huawei = phoneFactory.getPhone(<span class="string">"huawei"</span>);</span><br><span class="line">        huawei.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone vivo = phoneFactory.getPhone(<span class="string">"vivo"</span>);</span><br><span class="line">        vivo.publish();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-5-执行程序，输出结果："><a href="#步骤-5-执行程序，输出结果：" class="headerlink" title="步骤 5 执行程序，输出结果："></a>步骤 5 执行程序，输出结果：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate 20</span><br><span class="line">发布：vivo X23</span><br></pre></td></tr></table></figure>
-<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4. 总结"></a>4. 总结</h1><p><strong>优点：</strong> 1、一个调用者想创建一个对象，只要知道其名称就可以了。 2、扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。 3、屏蔽产品的具体实现，调用者只关心产品的接口。</p>
-<p><strong>缺点：</strong>每次增加一个产品时（比如添加一个OPPO手机发布），都需要增加一个具体类（<strong>OPPO.java</strong>）和修改对象实现工厂（<strong>PhoneFactory.java</strong>），使得系统中类的个数成倍增加，在一定程度上增加了系统的复杂度，同时也增加了系统具体类的依赖。违反了开闭原则，这并不是什么好事。</p>
-
-          
+          [TOC]
+1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。
+在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。
+2. 介绍
+意图：定
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -2123,322 +1756,25 @@
       
         
           
-            <h1 id="Spring-中常用的设计模式"><a href="#Spring-中常用的设计模式" class="headerlink" title="Spring 中常用的设计模式"></a>Spring 中常用的设计模式</h1><h2 id="1、我们通常说的-23-中经典设计模式可以通过下表一目了然："><a href="#1、我们通常说的-23-中经典设计模式可以通过下表一目了然：" class="headerlink" title="1、我们通常说的 23 中经典设计模式可以通过下表一目了然："></a>1、我们通常说的 23 中经典设计模式可以通过下表一目了然：</h2><table>
-<thead>
-<tr>
-<th>分类</th>
-<th style="text-align:left">设计模式</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>创建型</strong><br>这些设计模式提供了一种在创建对象的同时隐藏创建逻辑的方式，而不是使用 new 运算符直接实例化对象。这使得程序在判断针对某个给定实例需要创建哪些对象时更加灵活。</td>
-<td style="text-align:left">工厂方法模式（Factory Method）<br>抽象工厂模式（Abstract Factory）<br>建造者模式（Builder）<br>原型模式（Prototype）<br>单例模式(Singleton)</td>
-</tr>
-<tr>
-<td><strong>结构型</strong><br>这些设计模式关注类和对象的组合。继承的概念被用来组合接口和定义组合对象获得新功能的方式。</td>
-<td style="text-align:left">适配器模式(Adapter)<br>桥接模式（Bridge）<br>组合模式（Composite）<br>装饰器模式（Decorator）<br>门面(外观)模式（Facade）<br>享元模式（Flyweight）<br>代理模式（Proxy）</td>
-</tr>
-<tr>
-<td><strong>行为型</strong><br>这些设计模式特别关注对象之间的通信。</td>
-<td style="text-align:left">解释器模式（Interpreter）<br>模板方法模式（Template Method）<br>责任链模式（Chain of Responsibility）<br>命令模式（Command）<br>迭代器模式（Iterator）<br>调解(中介)者模式（Mediator）<br>备忘录模式（Memento）<br>观察者模式（Observer）<br>状态模式（State）<br>策略模式（Strategy）<br>访问者模式（Visitor）</td>
-</tr>
-</tbody>
-</table>
-<p>通常来说，设计模式都是混合使用，不会独立应用。利用穷举法充分理解设计模式的应用场景。在平时的应用中，不是用设计模式去生搬硬套，而是根据具体业务问题需要时借鉴。</p>
-<h2 id="2、设计模式在应用中遵循六大原则："><a href="#2、设计模式在应用中遵循六大原则：" class="headerlink" title="2、设计模式在应用中遵循六大原则："></a>2、设计模式在应用中遵循六大原则：</h2><h3 id="a、开闭原则（Open-Close-Principle）"><a href="#a、开闭原则（Open-Close-Principle）" class="headerlink" title="a、开闭原则（Open Close Principle）"></a>a、开闭原则（Open Close Principle）</h3><p>开闭原则就是说对扩展开放，对修改关闭。在程序需要进行拓展的时候，不能去修改原有的代码，实现一个热插拔的效果。所以一句话概括就是：为了使程序的扩展性好，易于维护和升级。想要达到这样的效果，我们需要使用接口和抽象类，后面的具体设计中我们会提到这点。  </p>
-<h3 id="b、里氏代换原则（Liskov-Substitution-Principle）"><a href="#b、里氏代换原则（Liskov-Substitution-Principle）" class="headerlink" title="b、里氏代换原则（Liskov Substitution Principle）"></a>b、里氏代换原则（Liskov Substitution Principle）</h3><p>里氏代换原则(Liskov Substitution Principle LSP)面向对象设计的基本原则之一。 里氏代换原则中说，任何基类可以出现的地方，子类一定可以出现。 LSP 是继承复用的基石，只有当衍生类可以替换掉基类，软件单位的功能不受到影响时，基类才能真正被复用，而衍生类也能够在基类的基础上增加新的行为。里氏代换原则是对“开-闭”原则的补充。实现“开-闭”原则的关键步骤就是抽象化。而基类与子类的继承关系就是抽象化的具体实现，所以里氏代换原则是对实现抽象化的具体步骤的规范。  </p>
-<h3 id="c、依赖倒转原则（Dependence-Inversion-Principle）"><a href="#c、依赖倒转原则（Dependence-Inversion-Principle）" class="headerlink" title="c、依赖倒转原则（Dependence Inversion Principle）"></a>c、依赖倒转原则（Dependence Inversion Principle）</h3><p>这个是开闭原则的基础，具体内容：针对接口编程，依赖于抽象而不依赖于具体。</p>
-<h3 id="d、接口隔离原则（Interface-Segregation-Principle）"><a href="#d、接口隔离原则（Interface-Segregation-Principle）" class="headerlink" title="d、接口隔离原则（Interface Segregation Principle）"></a>d、接口隔离原则（Interface Segregation Principle）</h3><p>这个原则的意思是：使用多个隔离的接口，比使用单个接口要好。还是一个降低类之间的耦合度的意思，从这儿我们看出，其实设计模式就是一个软件的设计思想，从大型软件架构出发，为了升级和维护方便。所以上文中多次出现：降低依赖，降低耦合。</p>
-<h3 id="e、迪米特法则（最少知道原则）（Demeter-Principle）"><a href="#e、迪米特法则（最少知道原则）（Demeter-Principle）" class="headerlink" title="e、迪米特法则（最少知道原则）（Demeter Principle）"></a>e、迪米特法则（最少知道原则）（Demeter Principle）</h3><p>为什么叫最少知道原则，就是说：一个实体应当尽量少的与其他实体之间发生相互作用，使得系统功能模块相对独立。  </p>
-<h3 id="f、组合-聚合复用原则（Composite-Aggregate-Reuse-Principle）"><a href="#f、组合-聚合复用原则（Composite-Aggregate-Reuse-Principle）" class="headerlink" title="f、组合/聚合复用原则（Composite/Aggregate Reuse Principle）"></a>f、组合/聚合复用原则（Composite/Aggregate Reuse Principle）</h3><p>原则是尽量使用合成/聚合的方式，而不是使用继承。</p>
-<p>设计模式之间的关系图</p>
-<p><img src="/2018/11/22/从现实生活理解Spring-中常用的设计模式/设计模式之间的关系图.png" alt="设计模式之间的关系图"></p>
-<h2 id="3、接下来我们只介绍在-Spring-中常用的设计模式。"><a href="#3、接下来我们只介绍在-Spring-中常用的设计模式。" class="headerlink" title="3、接下来我们只介绍在 Spring 中常用的设计模式。"></a>3、接下来我们只介绍在 Spring 中常用的设计模式。</h2><h3 id="1-1、简单工厂模式（Factory）"><a href="#1-1、简单工厂模式（Factory）" class="headerlink" title="1.1、简单工厂模式（Factory）"></a>1.1、简单工厂模式（Factory）</h3><p>应用场景：又叫做静态工厂方法（StaticFactory Method）模式，但不属于 23 种设计模式之一。简单工厂模式的实质是由一个工厂类根据传入的参数，动态决定应该创建哪一个产品类。</p>
-<p>Spring 中的 BeanFactory 就是简单工厂模式的体现，根据传入一个唯一的标识来获得 Bean 对象，但是否是在传入参数后创建还是传入参数前创建这个要根据具体情况来定。</p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>创建型模式</td>
-<td>是复杂工厂模式的思维模型</td>
-<td>批量生产、标准化</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-2、工厂方法模式（Factory-Method）"><a href="#1-2、工厂方法模式（Factory-Method）" class="headerlink" title="1.2、工厂方法模式（Factory Method）"></a>1.2、工厂方法模式（Factory Method）</h3><p>应用场景：通常由应用程序直接使用 new 创建新的对象，为了将对象的创建和使用相分离，采用工厂模式,即应用程序将对象的创建及初始化职责交给工厂对象。</p>
-<p>一般情况下,应用程序有自己的工厂对象来创建 Bean.如果将应用程序自己的工厂对象交给 Spring 管理,那么Spring 管理的就不是普通的 Bean,而是工厂 Bean。</p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>创建型模式</td>
-<td>对于调用者来说，隐藏了复杂的逻辑处理过程，调用<br>者只关心执行结果。<br>对于工厂来说要对结果负责，保证生产出符合规范的</td>
-<td>流水线生产</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-3、单例模式（Singleton）"><a href="#1-3、单例模式（Singleton）" class="headerlink" title="1.3、单例模式（Singleton）"></a>1.3、单例模式（Singleton）</h3><p>应用场景：保证一个类仅有一个实例，并提供一个访问它的全局访问点。</p>
-<p>Spring 中的单例模式完成了后半句话，即提供了全局的访问点 BeanFactory。但没有从构造器级别去控制单例，这是因为 Spring 管理的是是任意的 Java 对象。 Spring 下默认的 Bean 均为单例。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>创建型模式</td>
-<td>保证从系统启动到系统终止，全过程<br>只会产生一个实例<br>当我们在应用中遇到功能性冲突的时<br>候，需要使用单例模式。</td>
-<td>配置文件、日历、IOC 容器</td>
-</tr>
-</tbody>
-</table>
-<p> 常用单例模式写法：饿汉式、懒汉式、注册式、序列化。  </p>
-<h3 id="1-4、原型模式（Prototype）"><a href="#1-4、原型模式（Prototype）" class="headerlink" title="1.4、原型模式（Prototype）"></a>1.4、原型模式（Prototype）</h3><p>应用场景：原型模式就是从一个对象再创建另外一个可定制的对象，而且不需要知道任何创建的细节。所谓原型模式，就是 Java 中的克隆技术，以某个对象为原型。复制出新的对象。显然新的对象具备原型对象的特点，效率高（避免了重新执行构造过程步骤）。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>创建型模式</td>
-<td>首先有一个原型。 <br>数据内容相同，但对象实例不同（完全两个个体）。</td>
-<td>孙悟空吹毫毛</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-5、代理模式（Proxy）"><a href="#1-5、代理模式（Proxy）" class="headerlink" title="1.5、代理模式（Proxy）"></a>1.5、代理模式（Proxy）</h3><p>应用场景：为其他对象提供一种代理以控制对这个对象的访问。从结构上来看和 装饰者（Decorator） 模式类似，但 Proxy 是控制，更像是一种对功能的限制，而 装饰者（Decorator）是增加职责。  </p>
-<p>Spring 的 Proxy 模式在 AOP 中有体现，比如 JdkDynamicAopProxy 和 Cglib2AopProxy。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>结构型模式</td>
-<td>执行者、被代理人 <br>对于被代理人来说，这件事情是<br>一定要做的，但是我自己又不想<br>做或者没有时间做。<br>对于代理人而言，需要获取到被<br>代理的人个人资料，只是参与整个<br>过程的某个或几个环节。</td>
-<td>租房中介、售票黄牛、婚介<br>经纪人、快递、 事务代理、<br>非侵入式日志监听</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-6、策略模式（Strategy）"><a href="#1-6、策略模式（Strategy）" class="headerlink" title="1.6、策略模式（Strategy）"></a>1.6、策略模式（Strategy）</h3><p>应用场景：定义一系列的算法，把它们一个个封装起来，并且使它们可相互替换。本模式使得算法可独立于使用它的客户而变化。</p>
-<p>Spring 中在实例化对象的时候用到 Strategy 模式，在 SimpleInstantiationStrategy 有使用。</p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>行为型模式</td>
-<td>最终执行结果是固定的。执行过程和执行逻辑不一样。</td>
-<td>旅游出行方式</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-7、模板方法模式（Template-Method）"><a href="#1-7、模板方法模式（Template-Method）" class="headerlink" title="1.7、模板方法模式（Template Method）"></a>1.7、模板方法模式（Template Method）</h3><p>定义一个操作中的算法的骨架，而将一些步骤延迟到子类中。Template Method 使得子类可以不改变一个算法的结构即可重定义该算法的某些特定步骤。</p>
-<p>Template Method 模式一般是需要继承的。这里想要探讨另一种对 Template Method 的理解。Spring中的 JdbcTemplate，在用这个类时并不想去继承这个类，因为这个类的方法太多，但是我们还是想用到 JdbcTemplate 已有的稳定的、公用的数据库连接，那么我们怎么办呢？我们可以把变化的东西抽出来作为一个参数传入JdbcTemplate 的方法中。但是变化的东西是一段代码，而且这段代码会用到JdbcTemplate 中的变量。怎么办？那我们就用回调对象吧。在这个回调对象中定义一个操纵JdbcTemplate 中变量的方法，我们去实现这个方法，就把变化的东西集中到这里了。然后我们再传入这个回调对象到 JdbcTemplate，从而完成了调用。这就是Template Method 不需要继承的另一种实现方式。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>行为型模式</td>
-<td>执行流程固定，但中间有些步骤<br>有细微差别（运行时才确定）。<br>可实现批量生产。</td>
-<td>Spring ORM 数据模型</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-8、委派模式（Delegate）"><a href="#1-8、委派模式（Delegate）" class="headerlink" title="1.8、委派模式（Delegate）"></a>1.8、委派模式（Delegate）</h3><p>应用场景：不属于 23 种设计模式之一，是面向对象设计模式中常用的一种模式。这种模式的原理为类 B 和类 A 是两个互相没有任何关系的类，B 具有和 A 一模一样的方法和属性；并且调用 B 中的方法，属性就是调用 A 中同名的方法和属性。B 好像就是一个受 A 授权委托的中介。第三方的代码不需要知道 A 的存在，也不需要和 A 发生直接的联系，通过 B 就可以直接使用 A 的功能，这样既能够使用到 A 的各种功能，又能够很好的将 A 保护起来了，一举两得。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>行为型模式</td>
-<td>要和代理模式区分开来。<br>持有被委托人的引用。<br>不关心过程，只关心结果。</td>
-<td>经 理 派 发 工 作 任 务<br>Dispatcher</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-9、适配器模式（Adapter）"><a href="#1-9、适配器模式（Adapter）" class="headerlink" title="1.9、适配器模式（Adapter）"></a>1.9、适配器模式（Adapter）</h3><p>Spring AOP 模块对 BeforeAdvice、AfterAdvice、ThrowsAdvice 三种通知类型的支持实际上是借助适配器模式来实现的，这样的好处是使得框架允许用户向框架中加入自己想要支持的任何一种通知类型，上述三种通知类型是 Spring AOP 模块定义的，它们是 AOP 联盟定义的 Advice 的子类型。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>结构型模式</td>
-<td>注重兼容、转换。<br>适配者与被适配这之间没有层级<br>关系，也没有必然联系<br>满足 has-a 的关系。</td>
-<td>编码解码、一拖三充电头、<br> HDMI 转 VGA、Type-C 转 USB</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-10、装饰器模式（Decorator）"><a href="#1-10、装饰器模式（Decorator）" class="headerlink" title="1.10、装饰器模式（Decorator）"></a>1.10、装饰器模式（Decorator）</h3><p>应用场景：在我们的项目中遇到这样一个问题：我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。我们以往在 Spring 和 Hibernate 框架中总是配置一个数据源，因而 SessionFactory 的 DataSource 属性总是指向这个数据源并且恒定不变，所有 DAO 在使用SessionFactory 的时候都是通过这个数据源访问数据库。但是现在，由于项目的需要，我们的 DAO 在访 问 SessionFactory 的 时 候 都 不得不在多个数据源中不断切换，问题就出现了：如何让SessionFactory 在执行数据持久化的时候，根据客户的需求能够动态切换不同的数据源？我们能不能在 Spring 的框架下通过少量修改得到解决？是否有什么设计模式可以利用呢？  </p>
-<p>首先想到在 Spring 的 ApplicationContext 中配置所有的 DataSource。这些 DataSource 可能是各种不同类型的，比如不同的数据库：Oracle、SQL Server、MySQL 等，也可能是不同的数据源：比如Apache 提供的org.apache.commons.dbcp.BasicDataSource 、 Spring 提 供 的  org.springframework.jndi.JndiObjectFactoryBean 等。然后 SessionFactory 根据客户的每次请求，将 DataSource 属性设置成不同的数据源，以到达切换数据源的目的。</p>
-<p>Spring 中用到的包装器模式在类名上有两种表现：一种是类名中含有 Wrapper，另一种是类名中含有Decorator。基本上都是动态地给一个对象添加一些额外的职责。</p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>结构型模式</td>
-<td>1、注重覆盖、扩展。<br>2、装饰器和被装饰器都实现同一个接口，主要目的<br>是为了扩展之后依旧保留OOP 关系（同宗同源）。<br>必然联系<br>3、满足 is-a 的关系。</td>
-<td>IO 流包装、数据源包装<br>简历包装</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-11、观察者模式（Observer）"><a href="#1-11、观察者模式（Observer）" class="headerlink" title="1.11、观察者模式（Observer）"></a>1.11、观察者模式（Observer）</h3><p>应用场景：定义对象间的一种一对多的依赖关系，当一个对象的状态发生改变时，所有依赖于它的对象都得到通知并被自动更新。</p>
-<p>Spring 中 Observer 模式常用的地方是 Listener 的实现。如 ApplicationListener。  </p>
-<table>
-<thead>
-<tr>
-<th>归类</th>
-<th>特点</th>
-<th>穷举</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>行为型模式</td>
-<td>一般由两个角色组成：发布者和订阅者（观察者）。<br>观察者通常有一个回调，也可以没有。</td>
-<td>监听器、日志收集、<br>短信通知、邮件通知</td>
-</tr>
-</tbody>
-</table>
-<h3 id="1-12、各设计模式对比及编程思想总结"><a href="#1-12、各设计模式对比及编程思想总结" class="headerlink" title="1.12、各设计模式对比及编程思想总结"></a>1.12、各设计模式对比及编程思想总结</h3><table>
-<thead>
-<tr>
-<th>设计模式</th>
-<th>一句话归纳</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>工厂模式（Factory）</td>
-<td>只对结果负责，不要三无产品。</td>
-</tr>
-<tr>
-<td>单例模式（Singleton）</td>
-<td>保证独一无二。</td>
-</tr>
-<tr>
-<td>适配器模式（Adapter）</td>
-<td>需要一个转换头（兼容）。</td>
-</tr>
-<tr>
-<td>装饰器模式（Decorator）</td>
-<td>需要包装，但不改变本质(同宗同源)。</td>
-</tr>
-<tr>
-<td>代理模式（Proxy）</td>
-<td>办事要求人，所以找代理。</td>
-</tr>
-<tr>
-<td>观察者模式（Observer）</td>
-<td>完成时通知我。</td>
-</tr>
-<tr>
-<td>策略模式（Strategy）</td>
-<td>我行我素，达到目的就行。</td>
-</tr>
-<tr>
-<td>模板模式（Template）</td>
-<td>流程标准化，原料自己加。</td>
-</tr>
-<tr>
-<td>委派模式（Delegate）</td>
-<td>干活是你的（普通员工），功劳是我的（项目经理）。</td>
-</tr>
-<tr>
-<td>原型模式（Prototype）</td>
-<td>拔一根猴毛，吹出千万个。</td>
-</tr>
-</tbody>
-</table>
-<h1 id="编程思想总结"><a href="#编程思想总结" class="headerlink" title="编程思想总结"></a>编程思想总结</h1><table>
-<thead>
-<tr>
-<th>Spring 思想</th>
-<th>应用场景（特点）</th>
-<th>一句话归纳</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>AOP</td>
-<td>Aspect Oriented Programming(面向切面编程) <br>找出多个类中有一定规律的代码，开发时拆开，<br>运行时再合并。 面向切面编程，即面向规则编程。</td>
-<td>解耦，专人做专事。</td>
-</tr>
-<tr>
-<td>OOP</td>
-<td>Object Oriented Programming（面向对象编程）<br>归纳总结生活中一切事物。</td>
-<td>封装、继承、多态。</td>
-</tr>
-<tr>
-<td>BOP</td>
-<td>Bean Oriented Programming（面向 Bean 编程）<br>面向 Bean（普通的 java 类）设计程序。</td>
-<td>一切从 Bean 开始。</td>
-</tr>
-<tr>
-<td>IOC</td>
-<td>Inversion of Control（控制反转）<br>将 new 对象的动作交给 Spring 管理，并由 Spring 保存已创建<br>的对象（IOC 容器）。</td>
-<td>转交控制权（即控制权反转）。</td>
-</tr>
-<tr>
-<td>DI/DL</td>
-<td>Dependency Injection（依赖注入）或者 Dependency Lookup（依赖查找）<br>依赖注入、依赖查找，Spring 不仅保存自己创建的对象，<br>而且保存对象与对象之间的关系。注入即赋值，主要三种<br>方式：构造方法、set 方法、直接赋值。</td>
-<td>先理清关系再赋值。</td>
-</tr>
-</tbody>
-</table>
+          Spring 中常用的设计模式1、我们通常说的 23 中经典设计模式可以通过下表一目了然：
 
-          
+
+分类
+设计模式
+
+
+
+
+创建型这些设计模式提供了一种在创建对象的同时隐藏创建逻辑的方式，而不是使用 new 运算符直接实例化对象。这使得程序在判断针对某个给定实例需要创建哪些对象时更加灵活。
+工厂方法模式
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/22/从现实生活理解Spring-中常用的设计模式/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -2591,65 +1927,37 @@
       
         
           
-            <h1 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h1><p><em>简介</em>：学习源码中所用到的经典的设计思想</p>
-<table>
-<thead>
-<tr>
-<th>常用设计模式</th>
-<th style="text-align:left">spring5</th>
-<th>MyBatis</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Proxy 代理模式</td>
-<td style="text-align:left">IOC容器设计原理及高级特性</td>
-<td>代码自动生成器</td>
-</tr>
-<tr>
-<td>Factory 工厂模式</td>
-<td style="text-align:left">AOP设计原理</td>
-<td>Mybtis关联查询、嵌套查询</td>
-</tr>
-<tr>
-<td>Singleton 单例模式</td>
-<td style="text-align:left">FactoryBean与BeanFactory</td>
-<td>缓存使用场景及选择策略</td>
-</tr>
-<tr>
-<td>Prototype 原型模式</td>
-<td style="text-align:left">Spring事物处理机制</td>
-<td>Spring集成下的SqlSession与Mapper Mybatis的事物</td>
-</tr>
-<tr>
-<td>Strategy 策略模式</td>
-<td style="text-align:left">基于SpringJDBC手写ORM框架</td>
-<td>分析Mybatis的动态代理真正实现</td>
-</tr>
-<tr>
-<td>Delegate 委派模式</td>
-<td style="text-align:left">SpringMVC九大组件</td>
-<td>手写实现Mini版的Mybatis</td>
-</tr>
-<tr>
-<td>Template 模板方法</td>
-<td style="text-align:left">SpringMVC与Struts2对比分析</td>
-<td></td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align:left">Spring5新特性</td>
-</tr>
-</tbody>
-</table>
-<h1 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h1><p><em>简介</em>：</p>
-<h1 id="微服务架构"><a href="#微服务架构" class="headerlink" title="微服务架构"></a>微服务架构</h1><p><em>简介</em>：围绕微服务的通用模式，学习Spring Cloud的常见用法及原理</p>
-<h1 id="性能优化"><a href="#性能优化" class="headerlink" title="性能优化"></a>性能优化</h1><p><em>简介</em>：从JVM底层原理到内存优化再到各个中间件的性能调优</p>
-<h1 id="工程化"><a href="#工程化" class="headerlink" title="工程化"></a>工程化</h1><p><em>简介</em>：工善欲其事必先利其器，选择好的工具，提升开发效率和团队协作效率，让自己有更多的时间来思考</p>
-<h1 id="多线程并发编程"><a href="#多线程并发编程" class="headerlink" title="多线程并发编程"></a>多线程并发编程</h1><p><em>简介</em>：深入了解底层实现原理</p>
-<h1 id="电商项目实战"><a href="#电商项目实战" class="headerlink" title="电商项目实战"></a>电商项目实战</h1><p><em>简介</em>：大型电商分布式系统应用实战，利用云服务器搭建真实的开发和部署环境，提高动手能力</p>
+          源码分析简介：学习源码中所用到的经典的设计思想
 
-          
+
+
+常用设计模式
+spring5
+MyBatis
+
+
+
+
+Proxy 代理模式
+IOC容器设计原理及高级特性
+代码自动生成器
+
+
+Factory 工厂模式
+AOP设计原理
+Mybtis关联查询、嵌套查询
+
+
+Singleton 单例模式
+Factor
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/22/七大Java架构专题/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -2802,78 +2110,16 @@
       
         
           
-            <h1 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h1><p>​    工作两年了，没有系统的学习过Java知识体系，现在对未来一年做了一个规划，搭建此博客，记录后续学习笔记，也算是为了锻炼自己的文字表达能力。</p>
-<p>​    我曾经也用过OneNote、CSDN、博客园、写过博客，甚至自己打算写一个博客系统。当然以上都是半途而废…，我不想永远怎么颓废下去。我要开始执行我的未来规划。再半途而废，活该一辈子当码农</p>
-<p>​    写这个开篇第一篇，就当练手了。还不太会用markdownb编辑器</p>
-<p>​    废话不多话，为何我要搭建GitHub Pages博客？？？</p>
-<h1 id="二、Github-Pages"><a href="#二、Github-Pages" class="headerlink" title="二、Github Pages"></a>二、Github Pages</h1><p><a href="https://pages.github.com/" target="_blank" rel="noopener">Github Pages</a> 是面向用户、组织和项目开放的公共静态页面搭建托管服 务，站点可以被免费托管在 Github 上，你可以选择使用 Github Pages 默 认提供的域名 github.io 或者自定义域名来发布站点。Github Pages 支持 自动利用 Jekyll 生成站点，也同样支持纯 HTML 文档，将你的 Jekyll 站 点托管在 Github Pages 上是一个不错的选择。</p>
-<h1 id="三、开始搭建Github-Pages"><a href="#三、开始搭建Github-Pages" class="headerlink" title="三、开始搭建Github Pages"></a>三、开始搭建Github Pages</h1><h2 id="1、注册属于你自己的Github账号"><a href="#1、注册属于你自己的Github账号" class="headerlink" title="1、注册属于你自己的Github账号"></a>1、注册属于你自己的Github账号</h2><p>​    首先进入<a href="https://github.com/" target="_blank" rel="noopener">Github</a>站点,然后进行注册(此处不做详细说明可自行阅读<a href="http://jingyan.baidu.com/article/455a9950abe0ada167277864.html" target="_blank" rel="noopener">github教程：[1]注册github</a>)</p>
-<p>注册完毕后你就拥有了自己的代码仓库了.</p>
-<h2 id="2、创建仓库"><a href="#2、创建仓库" class="headerlink" title="2、创建仓库"></a>2、创建仓库</h2><p>在Github首页右上角头像左侧加号点选择 New repositor(新存储库)或<a href="https://github.com/new" target="_blank" rel="noopener">点击这里</a>进行创建一个仓库.</p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542803416460.png" alt="1542803416460"></p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542804875679.png" alt="1542804875679"></p>
-<h2 id="3、开启Github-Pages"><a href="#3、开启Github-Pages" class="headerlink" title="3、开启Github Pages"></a>3、开启Github Pages</h2><p>进入设置<br><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542805084668.png" alt="1542805084668"></p>
-<p>找到这一块</p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542805154912.png" alt="1542805154912"></p>
-<p>当你的仓库名为：用户名.github.io 之后默认开启Github Pages</p>
-<p>现在随便选择一个主题,选择上图的 Choose a theme 之后会跳转到下面这个页面</p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1846640047.png" alt="1846640047"></p>
-<p>设置完毕后你就可以通过 username.github.io(username为你的用户名访问你的博客了)</p>
-<p>## </p>
-<p>接下来就需要搭建Hexo了</p>
-<h1 id="四、Hexo"><a href="#四、Hexo" class="headerlink" title="四、Hexo"></a>四、Hexo</h1><h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>要使用Hexo,需要安装Nodejs以及Git</p>
-<h2 id="安装Node-js"><a href="#安装Node-js" class="headerlink" title="安装Node.js"></a>安装Node.js</h2><p><a href="https://nodejs.org/en/download/" target="_blank" rel="noopener">下载Node.js</a><br>参考:<a href="http://www.runoob.com/nodejs/nodejs-install-setup.html" target="_blank" rel="noopener">安装Node.js</a></p>
-<h2 id="安装Git"><a href="#安装Git" class="headerlink" title="安装Git"></a>安装Git</h2><p><a href="https://git-scm.com/download/" target="_blank" rel="noopener">下载Git</a></p>
-<p>一路点击Next就行了.</p>
-<h2 id="安装Hexo"><a href="#安装Hexo" class="headerlink" title="安装Hexo"></a>安装Hexo</h2><p>在你需要安装Hexo的目录下(新建一个文件夹)右键选择 Git Bash</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g   </span><br><span class="line">hexo init #初始化网站   </span><br><span class="line">npm install   </span><br><span class="line">hexo g #生成或 hexo generate   </span><br><span class="line">hexo s #启动本地服务器 或者 hexo server,这一步之后就可以通过http://localhost:4000  查看了</span><br></pre></td></tr></table></figure>
-<p><em>详细命令请参考Hexo文档</em></p>
-<p>这里介绍一下怎么创建一篇文章</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo new &quot;文章名&quot; #新建文章</span><br><span class="line">hexo new page &quot;页面名&quot; #新建页面</span><br></pre></td></tr></table></figure>
-<p>常用简写</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo n == hexo new</span><br><span class="line">hexo g == hexo generate</span><br><span class="line">hexo s == hexo server</span><br><span class="line">hexo d == hexo deploy</span><br></pre></td></tr></table></figure>
-<p>新建一篇文章后就可以<a href="http://localhost:4000/" target="_blank" rel="noopener">预览</a>了,在hexo new之后执行一次生成hexo g再执行hexo s启动本地服务器,如果之前还在hexo s 按Ctrl + C 结束.</p>
-<h2 id="添加主题"><a href="#添加主题" class="headerlink" title="添加主题"></a>添加主题</h2><p>我这里使用的主题是<a href="http://theme-next.iissnan.com/" target="_blank" rel="noopener">next</a>，为什么使用next，我参考了<a href="https://blog.csdn.net/u011475210/article/details/79023429" target="_blank" rel="noopener">这个博文</a></p>
-<p>写的很好</p>
-<h3 id="安装主题-next主题"><a href="#安装主题-next主题" class="headerlink" title="安装主题(next主题):"></a>安装主题(next主题):</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">git clone https://github.com/litten/hexo-theme-next.git themes/next</span><br></pre></td></tr></table></figure>
-<h3 id="启动主题"><a href="#启动主题" class="headerlink" title="启动主题"></a>启动主题</h3><p>找到目录下的_config.yml 文件,打开找到 theme：属性并设置为next</p>
-<h3 id="更新主题"><a href="#更新主题" class="headerlink" title="更新主题"></a>更新主题</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd themes/next</span><br><span class="line">git pull</span><br><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-<p>此时刷新<a href="http://localhost:4000/" target="_blank" rel="noopener">http://localhost:4000/</a>页面就能看到新的主题了.</p>
-<h2 id="使用Hexo-deploy部署到github"><a href="#使用Hexo-deploy部署到github" class="headerlink" title="使用Hexo deploy部署到github"></a>使用Hexo deploy部署到github</h2><p>还是编辑根目录下_config.yml文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">    type: git</span><br><span class="line">    repo: git@github.com:username/username.github.io.git  #这里的网址填你自己的</span><br><span class="line">    branch: master</span><br></pre></td></tr></table></figure>
-<p>保存后需要提前安装一个扩展：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
-<p>接下来就是将Hexo部署到我们的Github仓库上</p>
-<ol>
-<li><h1 id="部署到Github"><a href="#部署到Github" class="headerlink" title="部署到Github"></a>部署到Github</h1></li>
-</ol>
-<h2 id="1-检查SSH-keys的设置"><a href="#1-检查SSH-keys的设置" class="headerlink" title="1.检查SSH keys的设置"></a>1.检查SSH keys的设置</h2><p>以下命令均是在Git bash里输入</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ~/.ssh</span><br></pre></td></tr></table></figure>
-<p>输入上面命令后，如果出现：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#ssh: No such file or directory</span><br></pre></td></tr></table></figure>
-<p>假如你你以前有了，会如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">ls</span><br><span class="line">#此时会显示一些文件</span><br><span class="line">mkdir key_backup</span><br><span class="line">cp id_rsa* key_backup</span><br><span class="line">rm id_rsa*  </span><br><span class="line">#以上三步为备份和移除原来的SSH key设置</span><br><span class="line">ssh-keygen -t rsa -C &quot;邮件地址@youremail.com&quot; #生成新的key文件,邮箱地址填你的Github地址</span><br><span class="line">#Enter file in which to save the key (/Users/your_user_directory/.ssh/id_rsa):&lt;回车就好&gt;</span><br><span class="line">#接下来会让你输入密码（这里我建议自己的笔记本电脑就不要设置密码了，直接回车就行）</span><br></pre></td></tr></table></figure>
-<p>之后就可以看到成功的界面。</p>
-<h2 id="2-添加SSH-Key到Github"><a href="#2-添加SSH-Key到Github" class="headerlink" title="2.添加SSH Key到Github"></a>2.添加SSH Key到Github</h2><p>进入<a href="https://github.com/" target="_blank" rel="noopener">github首页</a></p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542807916514.png" alt="1542807916514"></p>
-<p>添加SSH Key。</p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542810809808.png" alt="1542810809808"></p>
-<p>找到 系统当前用户目录下(开启查看隐藏文件) C:\Users\用户名\ .ssh id_rsa.pub文件以文本方式打开。打开之后全部复制到key中</p>
-<p><img src="/2018/11/20/Hexo-GitHub-搭建我的博客/1542810923218.png" alt="1542810923218"></p>
-<p>到了这就可以测试一下是否成功了:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh -T git@github.com</span><br><span class="line">#之后会要你输入yes/no,输入yes就好了。</span><br></pre></td></tr></table></figure>
-<p>设置你的账号信息:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name &quot;你的名字&quot;     #真实名字不是github用户名</span><br><span class="line">git config --global user.email &quot;邮箱@邮箱.com&quot;    #github邮箱</span><br></pre></td></tr></table></figure>
-<h2 id="3-部署到github"><a href="#3-部署到github" class="headerlink" title="3.部署到github"></a>3.部署到github</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-<p>这时再刷新 username.github.io 就可以看到你的博客了。</p>
-<p>到了这你以为就结束了吗？没有，还有坑没有给你们填好。</p>
-<h1 id="六、最后的补充"><a href="#六、最后的补充" class="headerlink" title="六、最后的补充"></a>六、最后的补充</h1><ol>
-<li>电脑重装了系统/多台电脑写博客？那就赶紧戳这里<a href="https://www.zhihu.com/question/21193762" target="_blank" rel="noopener">使用hexo，如果换了电脑怎么更新博客？</a></li>
-<li>不知道如何编写Markdown语法？<a href="http://www.jianshu.com/p/1e402922ee32/" target="_blank" rel="noopener">Markdown——入门指南</a></li>
-<li>想要给网站添加图片？请把图片放入根目录 <em>source\</em> 下建立一个文件夹，当你执行hexo g的时候此文件夹自动生成到public中。</li>
-</ol>
-
-          
+          一、前言​    工作两年了，没有系统的学习过Java知识体系，现在对未来一年做了一个规划，搭建此博客，记录后续学习笔记，也算是为了锻炼自己的文字表达能力。
+​    我曾经也用过OneNote、CSDN、博客园、写过博客，甚至自己打算写一个博客系统。当然以上都是半途而废…，我不想永远怎么颓废下去。
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/20/Hexo-GitHub-搭建我的博客/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
