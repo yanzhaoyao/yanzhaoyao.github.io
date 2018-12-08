@@ -229,3 +229,11 @@ hexo d
 1. 电脑重装了系统/多台电脑写博客？那就赶紧戳这里[使用hexo，如果换了电脑怎么更新博客？](https://www.zhihu.com/question/21193762)
 2. 不知道如何编写Markdown语法？[Markdown——入门指南](http://www.jianshu.com/p/1e402922ee32/)
 3. 想要给网站添加图片？请把图片放入根目录 *source\* 下建立一个文件夹，当你执行hexo g的时候此文件夹自动生成到public中。
+
+# 补充：
+
+**hexo的next主题个性化教程:打造炫酷网站**
+
+https://www.jianshu.com/p/f054333ac9e6
+
+https://www.cnblogs.com/php-linux/p/8416122.html

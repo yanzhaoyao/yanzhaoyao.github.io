@@ -2,5 +2,7 @@
 title: {{ title }}
 date: {{ date }}
 tags: 
-categories： 
+categories: 
+typora-root-url: {{ title }}
+typora-copy-images-to: {{ title }}
 ---
