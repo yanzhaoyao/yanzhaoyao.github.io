@@ -106,22 +106,22 @@
 
 
 
-<meta name="description" content="mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服">
+<meta name="description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
 <meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL查询优化详解">
 <meta property="og:url" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/index.html">
 <meta property="og:site_name" content="燕兆耀的博客">
-<meta property="og:description" content="mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服">
+<meta property="og:description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/120622313511055.Png">
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/1544227223850.png">
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/1544227253819.png">
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/1544227841219.png">
-<meta property="og:updated_time" content="2018-12-08T02:37:58.134Z">
+<meta property="og:updated_time" content="2018-12-08T03:39:31.579Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL查询优化详解">
-<meta name="twitter:description" content="mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服">
+<meta name="twitter:description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
 <meta name="twitter:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/120622313511055.Png">
 
 
@@ -456,7 +456,8 @@
       
 
       
-        <h1 id="mysql-查询优化-查询执行的路径"><a href="#mysql-查询优化-查询执行的路径" class="headerlink" title="mysql 查询优化-查询执行的路径"></a>mysql 查询优化-查询执行的路径</h1><p><img src="/2018/12/07/MySQL查询优化详解/120622313511055.Png" alt="120622313511055"></p>
+        <p>[TOC]</p>
+<h1 id="mysql-查询优化-查询执行的路径"><a href="#mysql-查询优化-查询执行的路径" class="headerlink" title="mysql 查询优化-查询执行的路径"></a>mysql 查询优化-查询执行的路径</h1><p><img src="/2018/12/07/MySQL查询优化详解/120622313511055.Png" alt="120622313511055"></p>
 <ol>
 <li>mysql 客户端/服务端通信</li>
 <li>查询缓存</li>
