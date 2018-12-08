@@ -106,13 +106,13 @@
 
 
 
-<meta name="description" content="一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL命令，并且返">
+<meta name="description" content="[TOC] 一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL">
 <meta name="keywords" content="MySQL,性能优化,B+tree,索引">
 <meta property="og:type" content="article">
 <meta property="og:title" content="理解MySQL底层B+tree索引机制">
 <meta property="og:url" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/index.html">
 <meta property="og:site_name" content="燕兆耀的博客">
-<meta property="og:description" content="一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL命令，并且返">
+<meta property="og:description" content="[TOC] 一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/wps4EA1.tmp.jpg">
 <meta property="og:image" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/wps5B52.tmp.png">
@@ -128,10 +128,10 @@
 <meta property="og:image" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/120421194082079.Png">
 <meta property="og:image" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/120421194082084.Png">
 <meta property="og:image" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/120421194082088.Png">
-<meta property="og:updated_time" content="2018-12-05T12:04:50.117Z">
+<meta property="og:updated_time" content="2018-12-07T13:49:08.044Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="理解MySQL底层B+tree索引机制">
-<meta name="twitter:description" content="一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL命令，并且返">
+<meta name="twitter:description" content="[TOC] 一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL">
 <meta name="twitter:image" content="http://yoursite.com/2018/12/04/理解MySQL底层B-tree索引机制/wps4EA1.tmp.jpg">
 
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.4k
+                  3.7k
                 </span>
               
 
@@ -445,7 +445,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  12
+                  13
                 </span>
               
             </div>
@@ -466,7 +466,8 @@
       
 
       
-        <h1 id="一、初识Mysql体系结构"><a href="#一、初识Mysql体系结构" class="headerlink" title="一、初识Mysql体系结构"></a>一、初识Mysql体系结构</h1><p><strong>整体结构图</strong></p>
+        <p>[TOC]</p>
+<h1 id="一、初识Mysql体系结构"><a href="#一、初识Mysql体系结构" class="headerlink" title="一、初识Mysql体系结构"></a>一、初识Mysql体系结构</h1><p><strong>整体结构图</strong></p>
 <p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/wps4EA1.tmp.jpg" alt="img"></p>
 <ul>
 <li><p>Connectors </p>
@@ -547,24 +548,40 @@
 <p><strong>B+Tree与B-Tree的区别</strong></p>
 <p>1、B+节点关键字搜索采用闭合区间<br>2、B+非叶节点不保存数据相关信息，只保存关键字和子节点的引用<br>3、B+关键字对应的数据保存在叶子节点中<br>4、B+叶子节点是顺序排列的，并且相邻节点具有顺序引用的关系</p>
 <h2 id="为什么选用B-Tree-？"><a href="#为什么选用B-Tree-？" class="headerlink" title="为什么选用B+Tree ？"></a>为什么选用B+Tree ？</h2><p>B+树是B-树的变种（PLUS版）多路绝对平衡查找树，他拥有B-树的优势<br>B+树扫库、扫表能力更强<br>B+树的磁盘读写能力更强<br>B+树的排序能力更强<br>B+树的查询效率更加稳定（仁者见仁、智者见智）</p>
-<h1 id="Mysql-B-Tree索引体现形式"><a href="#Mysql-B-Tree索引体现形式" class="headerlink" title="Mysql B+Tree索引体现形式"></a>Mysql B+Tree索引体现形式</h1><h2 id="Mysql-B-Tree索引体现形式-Myisam"><a href="#Mysql-B-Tree索引体现形式-Myisam" class="headerlink" title="Mysql B+Tree索引体现形式 - Myisam"></a>Mysql B+Tree索引体现形式 - Myisam</h2><p>MyISAM是默认<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a>（Mysql5.1前）。它基于更老的ISAM代码，但有很多有用的扩展。（注意MySQL 5.1不支持ISAM）。 每个MyISAM在磁盘上存储成三个文件，每一个文件的名字均以表的名字开始，扩展名指出文件类型。</p>
-<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082063.Png" alt="120421194082063"></p>
-<p>.frm文件存储表定义；</p>
-<p>·MYD (MYData)文件存储表的数据；</p>
-<p>.MYI (MYIndex)文件存储表的索引。</p>
-<p>简介（<a href="https://baike.baidu.com/item/myisam/8970102?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
+<h1 id="Mysql-B-Tree索引体现形式"><a href="#Mysql-B-Tree索引体现形式" class="headerlink" title="Mysql B+Tree索引体现形式"></a>Mysql B+Tree索引体现形式</h1><h2 id="Mysql-B-Tree索引体现形式-Myisam"><a href="#Mysql-B-Tree索引体现形式-Myisam" class="headerlink" title="Mysql B+Tree索引体现形式 - Myisam"></a>Mysql B+Tree索引体现形式 - Myisam</h2><p>简介（<a href="https://baike.baidu.com/item/myisam/8970102?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
 <p>​    <code>要明确表示你想要用一个MyISAM表格，请用ENGINE表选项指出来：</code></p>
 <p>​    <code>CREATE TABLE t (i INT) ENGINE = MYISAM;</code></p>
 <p>​    <code>注释：老版本的MySQL使用TYPE而不是ENGINE（例如，TYPE = MYISAM）。MySQL 5.1为向下兼容而支持这个语法，但TYPE现在被轻视，而ENGINE是首先的用法。</code></p>
 <p>​    <code>一般地，ENGINE选项是不必要的；除非默认已经被改变了，InnoDB是默认[</code><a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a><code>]（Mysql 5.1后）。</code></p>
 <p>​    <code>你可以用myisamchk工具来检查或修复MyISAM表。请参阅MySQL 5.1参考手册5.9.5.6节，“使用myisamchk做崩溃恢复”。你也可以用myisampack来压缩MyISAM表，让它们占更少的空间。请参阅MySQL 5.1参考手册8.2节，“myisampack，产生压缩、只读的MyISAM表”。</code></p>
+<p>MyISAM是默认<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E" target="_blank" rel="noopener">存储引擎</a>（Mysql5.5前）。它基于更老的ISAM代码，但有很多有用的扩展。 </p>
+<p>每个MyISAM在磁盘上存储成三个文件，每一个文件的名字均以表的名字开始，扩展名指出文件类型。</p>
+<p><code>.frm</code>文件存储表定义；</p>
+<p><code>·MYD</code> (<code>MYData</code>)文件存储表的数据；</p>
+<p><code>.MYI</code> (<code>MYIndex</code>)文件存储表的索引。</p>
+<p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082063.Png" alt="120421194082063"></p>
+<p>MyISAM的索引与行记录是分开存储的，叫做<strong>非聚集索引</strong>（UnClustered Index）。</p>
+<p>其主键索引与普通索引没有本质差异：</p>
+<ul>
+<li>有连续聚集的区域单独存储行记录</li>
+<li>主键索引的叶子节点，存储主键，与对应行记录的指针</li>
+<li>普通索引的叶子结点，存储索引列，与对应行记录的指针</li>
+</ul>
+<p><em>画外音：MyISAM的表可以没有主键。</em></p>
+<p>主键索引与普通索引是两棵独立的索引B+树，通过索引列查找时，先定位到B+树的叶子节点，再通过指针定位到行记录。</p>
 <p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082067.Png" alt="120421194082067"></p>
 <h2 id="Mysql-B-Tree索引体现形式-innodb"><a href="#Mysql-B-Tree索引体现形式-innodb" class="headerlink" title="Mysql B+Tree索引体现形式 - innodb"></a>Mysql B+Tree索引体现形式 - innodb</h2><p>InnoDB，是MySQL的数据库引擎之一，为<a href="https://baike.baidu.com/item/MySQL%20AB" target="_blank" rel="noopener">MySQL AB</a>发布binary的标准之一。InnoDB由Innobase Oy公司所开发，2006年五月时由<a href="https://baike.baidu.com/item/%E7%94%B2%E9%AA%A8%E6%96%87%E5%85%AC%E5%8F%B8/430115" target="_blank" rel="noopener">甲骨文公司</a>并购。与传统的<a href="https://baike.baidu.com/item/ISAM" target="_blank" rel="noopener">ISAM</a>与<a href="https://baike.baidu.com/item/MyISAM" target="_blank" rel="noopener">MyISAM</a>相比，InnoDB的最大特色就是支持了<a href="https://baike.baidu.com/item/ACID/10738" target="_blank" rel="noopener">ACID</a>兼容的<a href="https://baike.baidu.com/item/%E4%BA%8B%E5%8A%A1/5945882" target="_blank" rel="noopener">事务</a>（Transaction）功能，类似于<a href="https://baike.baidu.com/item/PostgreSQL" target="_blank" rel="noopener">PostgreSQL</a>。</p>
 <p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082071.Png" alt="120421194082071"></p>
 <p>简介（<a href="https://baike.baidu.com/item/innodb/8970025?fr=aladdin" target="_blank" rel="noopener">百度百科</a>）</p>
 <p>​    事务型数据库的首选引擎，支持ACID事务，支持行级锁定。InnoDB是为处理巨大数据量时的最大性能设计。InnoDB存储引擎完全与MySQL服务器整合，InnoDB存储引擎为在主内存中缓存数据和索引而维持它自己的缓冲池。InnoDB存储它的表&amp;索引在一个表空间中，表空间可以包含数个文件（或原始磁盘分区）。这与MyISAM表不同，比如在MyISAM表中每个表被存在分离的文件中。InnoDB 表可以是任何尺寸，即使在文件尺寸被限制为2GB的操作系统上。InnoDB默认地被包含在MySQL二进制分发中。Windows Essentials installer使InnoDB成为Windows上MySQL的默认表。</p>
 <p><img src="/2018/12/04/理解MySQL底层B-tree索引机制/120421194082075-1543934044732.Png" alt="120421194082075"></p>
-<p>MySQL的innodb是以主键索引来组织数据结构的，假如你见表的时候，没有主键，innodb会自动隐式的建立一个主键索引。</p>
+<p>MySQL的Innodb是以主键索引来组织数据结构的，<strong>主键索引</strong>与行记录是存储在一起的，故叫做<strong>聚集索引</strong>（Clustered Index）</p>
+<p>因为这个特性，InnoDB的表必须要有聚集索引：</p>
+<p>(1)如果表定义了PK，则PK就是聚集索引；</p>
+<p>(2)如果表没有定义PK，则第一个非空unique列是聚集索引；</p>
+<p>(3)否则，InnoDB会创建一个隐藏的row-id作为聚集索引；</p>
+<p>InnoDB的<strong>聚集索引</strong>，也只能够有一个，因为数据行在物理磁盘上只能有一份聚集存储。</p>
+<p>InnoDB的<strong>普通索引</strong>，可以有多个，它与聚集索引是不同的。</p>
 <p>InnoDB存储引擎中页的大小默认为16KB，一般表的主键类型为INT（占用4个字节）或BIGINT（占用8个字节），指针类型也一般为4或8个字节，也就是说一个页（B+Tree中的一个节点）中大概存储16KB/(8B+8B)=1K个键值（因为是估值，为方便计算，这里的K取值为〖10〗^3）。也就是说一个深度为3的B+Tree索引可以维护10^3 <em> 10^3 </em> 10^3 = 10亿 条记录。</p>
 <p>实际情况中每个节点可能不能填充满，因此在数据库中，B+Tree的高度一般都在2~4层。<a href="http://lib.csdn.net/base/mysql" target="_blank" rel="noopener">mysql</a>的InnoDB存储引擎在设计时是将<strong>根节点常驻内存</strong>的，也就是说查找某一键值的行记录时最多只需要1~3次磁盘I/O操作。</p>
 <p>数据库中的B+Tree索引可以分为<strong>聚集索引（clustered index）</strong>和<strong>辅助索引（secondary index）</strong>。上面的B+Tree示例图在数据库中的实现即为聚集索引，<strong>聚集索引的B+Tree中的叶子节点存放的是整张表的行记录数据</strong>。辅助索引与聚集索引的区别在于<strong>辅助索引的叶子节点并不包含行记录的全部数据，而是存储相应行数据的聚集索引键，即主键</strong>。当通过辅助索引来查询数据时，InnoDB存储引擎会遍历辅助索引找到主键，然后再通过主键在聚集索引中找到完整的行记录数据。</p>
@@ -655,6 +672,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2018/12/06/MySQL插拔式的存储引擎/" rel="prev" title="MySQL插拔式的存储引擎">
+                MySQL插拔式的存储引擎 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -737,7 +758,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -748,7 +769,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -759,7 +780,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
