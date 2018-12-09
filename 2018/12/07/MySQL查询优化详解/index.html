@@ -118,7 +118,7 @@
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/1544227223850.png">
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/1544227253819.png">
 <meta property="og:image" content="http://yoursite.com/2018/12/07/MySQL查询优化详解/1544227841219.png">
-<meta property="og:updated_time" content="2018-12-08T03:39:31.579Z">
+<meta property="og:updated_time" content="2018-12-09T02:12:03.169Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL查询优化详解">
 <meta name="twitter:description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
@@ -699,7 +699,7 @@
 <h3 id="Using-where-："><a href="#Using-where-：" class="headerlink" title="Using where ："></a>Using where ：</h3><p>使用了where过滤</p>
 <h3 id="select-tables-optimized-away："><a href="#select-tables-optimized-away：" class="headerlink" title="select tables optimized away："></a>select tables optimized away：</h3><p>基于索引优化<code>MIN</code>/<code>MAX</code>操作或者MyISAM存储引擎优化<code>COUNT（*）</code>操作，不必等到执行阶段在进行计算，查询执行计划生成的阶段即可完成优化<br><code>explain select max(id) from users \G</code> </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; explain select max(id) from users \G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: NULL</span><br><span class="line">   partitions: NULL</span><br><span class="line">         type: NULL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: NULL</span><br><span class="line">     filtered: NULL</span><br><span class="line">        Extra: Select tables optimized away</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="no-matching-row-in-const-table"><a href="#no-matching-row-in-const-table" class="headerlink" title="no matching row in const table:"></a>no matching row in const table:</h3><p>执行计划优化阶段，认为const表中没有匹配的行</p>
+<h3 id="no-matching-row-in-const-table"><a href="#no-matching-row-in-const-table" class="headerlink" title="no matching row in const table:"></a>no matching row in const table:</h3><p>执行计划优化阶段，认为const表中没有匹配的行，直接返回结果。</p>
 <p><code>explain select * from users where id=-1 \G</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; explain select * from users where id=-1 \G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: NULL</span><br><span class="line">   partitions: NULL</span><br><span class="line">         type: NULL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: NULL</span><br><span class="line">     filtered: NULL</span><br><span class="line">        Extra: no matching row in const table</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt;</span><br></pre></td></tr></table></figure>
 
@@ -754,8 +754,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/12/08/如何定位慢sql/" rel="prev" title="如何定位慢sql">
-                如何定位慢sql <i class="fa fa-chevron-right"></i>
+              <a href="/2018/12/08/MySQL如何定位慢sql/" rel="prev" title="MySQL如何定位慢sql">
+                MySQL如何定位慢sql <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -840,7 +840,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">15</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -851,7 +851,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
