@@ -671,7 +671,7 @@ mysql>
 
 ### no matching row in const table:
 
-执行计划优化阶段，认为const表中没有匹配的行
+执行计划优化阶段，认为const表中没有匹配的行，直接返回结果。
 
 `explain select * from users where id=-1 \G`
 

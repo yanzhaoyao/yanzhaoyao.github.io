@@ -1,15 +1,14 @@
 ---
-layout: 'n'
-title: 理解MySQL底层B+tree索引机制
+title: MySQL底层B+tree索引机制
 date: 2018-12-04 20:12:07
 tags: 
 - MySQL
 - 性能优化
 - B+tree
 - 索引
-categories: 性能优化
-typora-copy-images-to: 理解MySQL底层B-tree索引机制
-typora-root-url: 理解MySQL底层B-tree索引机制
+categories: MySQL
+typora-copy-images-to: MySQL底层B-tree索引机制
+typora-root-url: MySQL底层B-tree索引机制
 ---
 
 [TOC]

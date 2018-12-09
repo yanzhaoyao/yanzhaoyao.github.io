@@ -1,7 +1,7 @@
 ---
-title: 如何定位慢sql
-typora-root-url: 如何定位慢sql
-typora-copy-images-to: 如何定位慢sql
+title: MySQL如何定位慢sql
+typora-root-url: MySQL如何定位慢sql
+typora-copy-images-to: MySQL如何定位慢sql
 date: 2018-12-08 10:40:06
 tags: 
 - MySQL
@@ -10,8 +10,6 @@ categories: MySQL
 ---
 
 [TOC]
-
-原文链接：https://www.cnblogs.com/WONDERFUL-cnblogs/p/5481358.html
 
 # MySQL“慢SQL”定位
 
@@ -229,3 +227,4 @@ pt-query-digest
 
 
 
+参考链接：https://www.cnblogs.com/WONDERFUL-cnblogs/p/5481358.html
