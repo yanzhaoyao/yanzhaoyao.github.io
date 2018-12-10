@@ -95,7 +95,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="MySQL,MySQL锁,">
 
 
 
@@ -106,17 +106,18 @@
 
 
 
-<meta name="description" content="人生能有几次博、此时不博何时博">
-<meta name="keywords" content="小燕哥">
-<meta property="og:type" content="website">
-<meta property="og:title" content="微笑">
-<meta property="og:url" content="http://yoursite.com/categories/MySQL/index.html">
+<meta name="description" content="[TOC] 锁是一个汉字，读作suǒ，本意是指置于可启闭的器物上，以钥匙或暗码开启，引申义是用锁锁住、封闭。 一、理解表锁、行锁锁是用于管理不同事务对共享资源的并发访问 表锁与行锁的区别：​    锁定粒度：表锁 &amp;gt; 行锁​    加锁效率：表锁 &amp;gt; 行锁​    冲突概率：表锁 &amp;gt; 行锁​    并发性能：表锁 &amp;lt; 行锁 InnoDB存储引擎支持行锁和表锁（另类的行锁）">
+<meta name="keywords" content="MySQL,MySQL锁">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL锁">
+<meta property="og:url" content="http://yoursite.com/2018/12/09/MySQL锁/index.html">
 <meta property="og:site_name" content="微笑">
-<meta property="og:description" content="人生能有几次博、此时不博何时博">
+<meta property="og:description" content="[TOC] 锁是一个汉字，读作suǒ，本意是指置于可启闭的器物上，以钥匙或暗码开启，引申义是用锁锁住、封闭。 一、理解表锁、行锁锁是用于管理不同事务对共享资源的并发访问 表锁与行锁的区别：​    锁定粒度：表锁 &amp;gt; 行锁​    加锁效率：表锁 &amp;gt; 行锁​    冲突概率：表锁 &amp;gt; 行锁​    并发性能：表锁 &amp;lt; 行锁 InnoDB存储引擎支持行锁和表锁（另类的行锁）">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-12-09T15:18:13.027Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="微笑">
-<meta name="twitter:description" content="人生能有几次博、此时不博何时博">
+<meta name="twitter:title" content="MySQL锁">
+<meta name="twitter:description" content="[TOC] 锁是一个汉字，读作suǒ，本意是指置于可启闭的器物上，以钥匙或暗码开启，引申义是用锁锁住、封闭。 一、理解表锁、行锁锁是用于管理不同事务对共享资源的并发访问 表锁与行锁的区别：​    锁定粒度：表锁 &amp;gt; 行锁​    加锁效率：表锁 &amp;gt; 行锁​    冲突概率：表锁 &amp;gt; 行锁​    并发性能：表锁 &amp;lt; 行锁 InnoDB存储引擎支持行锁和表锁（另类的行锁）">
 
 
 
@@ -146,13 +147,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/categories/MySQL/">
+  <link rel="canonical" href="http://yoursite.com/2018/12/09/MySQL锁/">
 
 
 
 
 
-  <title>分类: MySQL | 微笑</title>
+  <title>MySQL锁 | 微笑</title>
   
 
 
@@ -181,7 +182,7 @@
     
   
 
-  <div class="container sidebar-position-right ">
+  <div class="container sidebar-position-right page-post-detail">
     <div class="headband"></div>
 	<!-- 左上角实现fork me on github -->
 	<a href="https://github.com/yanzhaoyao/yanzhaoyao.github.io">
@@ -311,183 +312,257 @@
           <div id="content" class="content">
             
 
+  <div id="posts" class="posts-expand">
+    
+
+  
+
   
   
   
-  <div class="post-block category">
-
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h1>MySQL<small>分类</small>
-        </h1>
-      </div>
-
-      
-        
 
   <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/09/MySQL锁/">
 
-      <h2 class="post-title">
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="小燕哥">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/img/avatar/default.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="微笑">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/2018/12/09/MySQL锁/" itemprop="url">
-              
-                <span itemprop="name">MySQL锁</span>
-              
-            </a>
         
-      </h2>
+          <h1 class="post-title" itemprop="name headline">MySQL锁</h1>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-09T19:48:37+08:00" content="2018-12-09">
-          12-09
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-09T19:48:37+08:00">
+                2018-12-09
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/MySQL/" itemprop="url" rel="index">
+                    <span itemprop="name">MySQL</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i> 浏览
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  915
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  3
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-        
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/12/09/MySQL事务/" itemprop="url">
-              
-                <span itemprop="name">MySQL事务</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-09T10:27:18+08:00" content="2018-12-09">
-          12-09
-        </time>
-      </div>
-
-    </header>
-  </article>
-
+      
 
       
-        
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/12/08/MySQL如何定位慢sql/" itemprop="url">
-              
-                <span itemprop="name">MySQL如何定位慢sql</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-08T10:40:06+08:00" content="2018-12-08">
-          12-08
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/12/07/MySQL查询优化详解/" itemprop="url">
-              
-                <span itemprop="name">MySQL查询优化详解</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-07T21:52:31+08:00" content="2018-12-07">
-          12-07
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/12/06/MySQL插拔式的存储引擎/" itemprop="url">
-              
-                <span itemprop="name">MySQL插拔式的存储引擎</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-06T21:59:56+08:00" content="2018-12-06">
-          12-06
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-      
-        
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2018/12/04/MySQL底层B-tree索引机制/" itemprop="url">
-              
-                <span itemprop="name">MySQL底层B+tree索引机制</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2018-12-04T20:12:07+08:00" content="2018-12-04">
-          12-04
-        </time>
-      </div>
-
-    </header>
-  </article>
-
+        <p>[TOC]</p>
+<p>锁是一个汉字，读作suǒ，本意是指置于可启闭的器物上，以<a href="https://baike.baidu.com/item/%E9%92%A5%E5%8C%99/378903" target="_blank" rel="noopener">钥匙</a>或暗码开启，引申义是用锁锁住、封闭。</p>
+<h1 id="一、理解表锁、行锁"><a href="#一、理解表锁、行锁" class="headerlink" title="一、理解表锁、行锁"></a>一、理解表锁、行锁</h1><p>锁是用于管理不同事务对共享资源的并发访问</p>
+<p>表锁与行锁的区别：<br>​    锁定粒度：表锁 &gt; 行锁<br>​    加锁效率：表锁 &gt; 行锁<br>​    冲突概率：表锁 &gt; 行锁<br>​    并发性能：表锁 &lt; 行锁</p>
+<p>InnoDB存储引擎支持行锁和表锁（另类的行锁）</p>
+<h1 id="二、MySQL-Innodb锁类型"><a href="#二、MySQL-Innodb锁类型" class="headerlink" title="二、MySQL Innodb锁类型"></a>二、MySQL Innodb锁类型</h1><h2 id="3种类型"><a href="#3种类型" class="headerlink" title="3种类型"></a>3种类型</h2><p><strong>行锁</strong></p>
+<p>​    共享锁（行锁）：Shared Locks</p>
+<p>​    排它锁（行锁）：Exclusive Locks</p>
+<p><strong>表锁</strong></p>
+<p>​    意向锁共享锁（表锁）：Intention Shared Locks</p>
+<p>​    意向锁排它锁（表锁）：Intention Exclusive Locks<br><strong>自增锁</strong></p>
+<p>​    AUTO-INC Locks</p>
+<hr>
+<p>下面3种是<strong>行锁的算法</strong></p>
+<p><strong>记录锁</strong> Record Locks<br><strong>间隙锁</strong> Gap Locks<br><strong>临键锁</strong> Next-key Locks</p>
+<p>行锁的算法<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html</a></p>
+<h2 id="共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）"><a href="#共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）" class="headerlink" title="共享锁（Share Locks）vs 排它锁（Exclusive Locks）"></a>共享锁（Share Locks）vs 排它锁（Exclusive Locks）</h2><p><strong>共享锁</strong>:<br>​    又称为读锁，简称<strong>S</strong>锁，顾名思义，共享锁就是多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改;</p>
+<p>加锁释锁方式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select * from users WHERE id=1 LOCK IN SHARE MODE;</span><br><span class="line">commit/rollback</span><br></pre></td></tr></table></figure>
+<p><strong>排他锁</strong>:<br>​    又称为写锁，简称<strong>X</strong>锁，排他锁不能与其他锁并存，如一个事务获取了一个数据行的排他锁，其他事务就不能再获取该行的锁（共享锁、排他锁），只有该获取了排他锁的事务是可以对数据行进行读取和修改，（其他事务要读取数据可来自于快照//TODO 快照后面会将，待补充链接）</p>
+<p>加锁释锁方式：<br><code>delete</code> / <code>update</code> / <code>insert</code> 默认加上X锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM table_name WHERE ... FOR UPDATE</span><br><span class="line">commit / rollback</span><br></pre></td></tr></table></figure>
+<h2 id="Innodb到底锁了什么？"><a href="#Innodb到底锁了什么？" class="headerlink" title="Innodb到底锁了什么？"></a>Innodb到底锁了什么？</h2><p>InnoDB的行锁是通过给索引上的索引项加锁来实现的。</p>
+<p>只有通过索引条件进行数据检索，InnoDB才使用行级锁，否则，InnoDB将使用<strong>表锁（锁住索引的所有记录）</strong></p>
+<p>表锁：lock tables xx read/write；</p>
+<p>//TODO 测试 S X锁</p>
+<h2 id="意向共享锁（IS）-amp-意向排他锁"><a href="#意向共享锁（IS）-amp-意向排他锁" class="headerlink" title="意向共享锁（IS）&amp; 意向排他锁"></a>意向共享锁（IS）&amp; 意向排他锁</h2><p><strong>意向共享锁(IS)</strong></p>
+<p>​    表示事务准备给数据行加入共享锁，即一个数据行加共享锁前必须先取得该表的IS锁，意向共享锁之间是可以相互兼容的</p>
+<p><strong>意向排它锁(IX)</strong></p>
+<p>​    表示事务准备给数据行加入排他锁，即一个数据行加排他锁前必须先取得该表的IX锁，意向排它锁之间是可以相互兼容的</p>
+<p><strong>意向锁(IS、IX)</strong>是InnoDB数据操作之前自动加的，不需要用户干预</p>
+<p>意义：<br>当事务想去进行锁表时，可以先判断意向锁是否存在，存在时则可快速返回该表不能启用表锁</p>
+<p>例如生活中的案例</p>
+<p>​    一节火车车厢上的卫生间WC会有一个指示灯，提示<strong>有人、无人</strong>，其他乘客只需要通过指示灯可以判断卫生间能否进入，获取使用权。这个指示灯就相当于意向锁，只是一个标识。</p>
+<p>​    乘客要获取使用权卫生间，不用进入卫生间查看是否有人，只需要看指示灯就行了。</p>
+<p>​    事务要获取一个数据行的锁，不用获取共享锁/排它锁，只需要获取意向锁锁就行了。</p>
+<h2 id="自增锁-AUTO-INC-Locks"><a href="#自增锁-AUTO-INC-Locks" class="headerlink" title="自增锁 AUTO-INC Locks"></a>自增锁 AUTO-INC Locks</h2><p>针对自增列自增长的一个特殊的表级别锁</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show variables like &apos;innodb_autoinc_lock_mode&apos;;</span><br></pre></td></tr></table></figure>
+<p>默认取值1，步长为1，代表连续，事务未提交ID永久丢失</p>
 
       
     </div>
+    
+    
+    
 
+    
+
+    
+
+    
+
+	<div>
+		
+		  <div>
+			<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+		  </div>
+		
+	</div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MySQL/" rel="tag"><i class="fa fa-tag"></i> MySQL</a>
+          
+            <a href="/tags/MySQL锁/" rel="tag"><i class="fa fa-tag"></i> MySQL锁</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/09/MySQL事务/" rel="next" title="MySQL事务">
+                <i class="fa fa-chevron-left"></i> MySQL事务
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -495,6 +570,15 @@
 
 
           
+
+  
+    <div class="comments" id="comments">
+      <div id="lv-container" data-id="city" data-uid="MTAyMC80MTMzNi8xNzg4Mw=="></div>
+    </div>
+
+  
+
+
 
         </div>
         
@@ -515,8 +599,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -594,6 +687,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、理解表锁、行锁"><span class="nav-text">一、理解表锁、行锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、MySQL-Innodb锁类型"><span class="nav-text">二、MySQL Innodb锁类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3种类型"><span class="nav-text">3种类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）"><span class="nav-text">共享锁（Share Locks）vs 排它锁（Exclusive Locks）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb到底锁了什么？"><span class="nav-text">Innodb到底锁了什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#意向共享锁（IS）-amp-意向排他锁"><span class="nav-text">意向共享锁（IS）&amp; 意向排他锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自增锁-AUTO-INC-Locks"><span class="nav-text">自增锁 AUTO-INC Locks</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -772,6 +881,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
@@ -800,6 +913,17 @@
 
 
 
+  
+    <script type="text/javascript">
+      (function(d, s) {
+        var j, e = d.getElementsByTagName(s)[0];
+        if (typeof LivereTower === 'function') { return; }
+        j = d.createElement(s);
+        j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+        j.async = true;
+        e.parentNode.insertBefore(j, e);
+      })(document, 'script');
+    </script>
   
 
 
