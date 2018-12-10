@@ -238,31 +238,9 @@ Mysql的查询优化器是基于成本计算的原则。他会尝试各种执行
 
 ## mysql 查询优化-执行计划
 
+表结构见文后附录
+
 ```mysql
-mysql> desc users;
-+------------+-------------+------+-----+---------+----------------+
-| Field      | Type        | Null | Key | Default | Extra          |
-+------------+-------------+------+-----+---------+----------------+
-| id         | int(11)     | NO   | PRI | NULL    | auto_increment |
-| uname      | varchar(32) | NO   | MUL | NULL    |                |
-| userLevel  | int(11)     | NO   |     | NULL    |                |
-| age        | int(11)     | NO   |     | NULL    |                |
-| phoneNum   | char(11)    | NO   |     | NULL    |                |
-| createTime | datetime    | NO   |     | NULL    |                |
-| lastUpdate | datetime    | NO   |     | NULL    |                |
-+------------+-------------+------+-----+---------+----------------+
-7 rows in set (0.30 sec)
-
-mysql> desc user_address;
-+--------+--------------+------+-----+---------+----------------+
-| Field  | Type         | Null | Key | Default | Extra          |
-+--------+--------------+------+-----+---------+----------------+
-| id     | int(11)      | NO   | PRI | NULL    | auto_increment |
-| userID | int(11)      | YES  |     | NULL    |                |
-| addr   | varchar(256) | YES  |     | NULL    |                |
-+--------+--------------+------+-----+---------+----------------+
-3 rows in set (0.00 sec)
-
 mysql> EXPLAIN select * from users where id  in  (select userID  from user_address WHERE addr= "上海") \G
 *************************** 1. row ***************************
            id: 1
@@ -409,6 +387,8 @@ select查询的序列号，标识执行的顺序
   用户体验好，马上就拿到了数据
 
 # 六、测试
+
+表结构可以见文末尾附录
 
 ## 执行计划-type
 
@@ -693,5 +673,35 @@ possible_keys: NULL
 1 row in set, 1 warning (0.00 sec)
 
 mysql> 
+```
+
+# 附录
+
+表结构
+
+```mysql
+mysql> desc users;
++------------+-------------+------+-----+---------+----------------+
+| Field      | Type        | Null | Key | Default | Extra          |
++------------+-------------+------+-----+---------+----------------+
+| id         | int(11)     | NO   | PRI | NULL    | auto_increment |
+| uname      | varchar(32) | NO   | MUL | NULL    |                |
+| userLevel  | int(11)     | NO   |     | NULL    |                |
+| age        | int(11)     | NO   |     | NULL    |                |
+| phoneNum   | char(11)    | NO   |     | NULL    |                |
+| createTime | datetime    | NO   |     | NULL    |                |
+| lastUpdate | datetime    | NO   |     | NULL    |                |
++------------+-------------+------+-----+---------+----------------+
+7 rows in set (0.30 sec)
+
+mysql> desc user_address;
++--------+--------------+------+-----+---------+----------------+
+| Field  | Type         | Null | Key | Default | Extra          |
++--------+--------------+------+-----+---------+----------------+
+| id     | int(11)      | NO   | PRI | NULL    | auto_increment |
+| userID | int(11)      | YES  |     | NULL    |                |
+| addr   | varchar(256) | YES  |     | NULL    |                |
++--------+--------------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
 ```
 

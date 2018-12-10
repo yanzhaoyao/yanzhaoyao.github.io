@@ -237,3 +237,5 @@ hexo d
 https://www.jianshu.com/p/f054333ac9e6
 
 https://www.cnblogs.com/php-linux/p/8416122.html
+
+关于Hexo6.0搭建个人博客(coding+百度-收录篇)https://www.imooc.com/article/31084?block_id=tuijian_wz

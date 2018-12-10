@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 燕兆耀的博客
-subtitle: ZhaoYao Yan
-description: 加油ヾ(◍°∇°◍)ﾉﾞ
-keywords: 燕兆耀 yanzhaoyao
-author: 燕兆耀
+title: 微笑
+subtitle: 再努力一点，活成自己想要的
+description: 人生能有几次博、此时不博何时博
+keywords: 小燕哥
+author: 小燕哥
 language: zh-Hans
 timezone:
 # 头像的URL
@@ -15,7 +15,7 @@ avatar: /img/avatar/default.png
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: http://bolg.yanzhaoyao.top
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -93,5 +93,7 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: git@github.com:yanzhaoyao/yanzhaoyao.github.io.git
+  repository: 
+    github: git@github.com:yanzhaoyao/yanzhaoyao.github.io.git
+    coding: git@git.coding.net:yanzhaoyao/yanzhaoyao.git
   branch: master
