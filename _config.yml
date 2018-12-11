@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 微笑
+title: YShine's Bolg
 subtitle: 再努力一点，活成自己想要的
 description: 人生能有几次博、此时不博何时博
-keywords: 小燕哥
-author: 小燕哥
+keywords: YShine
+author: YShine
 language: zh-Hans
 timezone:
 # 头像的URL
@@ -43,7 +43,7 @@ future: true
 highlight:
   enable: true
   line_number: true
-  auto_detect: false
+  auto_detect: true
   tab_replace:
   
 # Home page setting
