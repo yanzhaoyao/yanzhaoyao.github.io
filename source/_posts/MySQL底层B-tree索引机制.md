@@ -11,11 +11,13 @@ typora-copy-images-to: MySQL底层B-tree索引机制
 typora-root-url: MySQL底层B-tree索引机制
 ---
 
-[TOC]
+​	还在认为索引相当于一本书的目录吗？带你了解MySQL底层B+tree索引机制
 
+<!-- more -->
 
+> 声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！
 
-# 一、初识Mysql体系结构
+# 初识Mysql体系结构
 
 **整体结构图**
 
@@ -61,7 +63,7 @@ typora-root-url: MySQL底层B-tree索引机制
 
 ![img](/wps5B52.tmp.png)
 
-# 二、理解Mysql底层B+tree索引机制
+# 理解Mysql底层B+tree索引机制
 
 写在前面的话
 

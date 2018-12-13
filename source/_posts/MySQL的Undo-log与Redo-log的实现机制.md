@@ -10,7 +10,13 @@ tags:
 categories: MySQL
 ---
 
-[TOC]
+​	本文将详细介绍什么是`Undo Log`、`Redo Log`。
+
+​	MySQL默认的Innodb在**REPEATABLE READ**隔离级别下,是如何通过`MVCC` + `Undo Log`，解决幻读的。
+
+<!-- more -->
+
+> 声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！
 
 # 1. Undo Log是什么
 

@@ -10,9 +10,15 @@ tags:
 categories: MySQL
 ---
 
-[TOC]
+​	[数据库事务](https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/9744607)(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列[操作](https://baike.baidu.com/item/%E6%93%8D%E4%BD%9C/33052)，要么完全地执行，要么完全地不执行。
 
-# 一、什么是事务
+​	事务的ACID特性，事务并发带来了哪些特性，事务的四种隔离级别。
+
+<!-- more -->
+
+> 声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！
+
+# 什么是事务
 
 [事务](https://baike.baidu.com/item/%E4%BA%8B%E5%8A%A1/5945882)（Transaction），一般是指要做的或所做的事情。在计算机[术语](https://baike.baidu.com/item/%E6%9C%AF%E8%AF%AD)中是指访问并可能更新数据库中各种[数据项](https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E9%A1%B9/3227309)的一个程序执行单元(unit)。
 
@@ -38,7 +44,7 @@ JDBC 编程：
 Spring 事务AOP编程：
 `expression=execution（com.xxx.service.*.*(..)）`
 
-# 二、事务的ACID特性
+# 事务的ACID特性
 
 - **原子性（Atomicity）**
 
@@ -58,7 +64,7 @@ Spring 事务AOP编程：
 
   事务所做的修改就会永久保存，不会因为系统意外导致数据的丢失
 
-# 三、事务并发带来了哪些问题
+# 事务并发带来了哪些问题
 
 如下图，事务A和事务B 同时操作id为1的user
 
@@ -113,7 +119,7 @@ Spring 事务AOP编程：
 
 如何解决上面三种问题呢？？？往下看
 
-# 四、事务四种隔离级别
+# 事务四种隔离级别
 
 SQL92，是数据库的一个ANSI/ISO标准。它定义了一种语言（SQL）以及数据库的行为（事务、隔离级别等）。
 

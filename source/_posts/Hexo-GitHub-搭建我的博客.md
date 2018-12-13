@@ -7,7 +7,7 @@ tags:
 typora-root-url: Hexo-GitHub-搭建我的博客
 ---
 
-# 一、前言
+# 前言
 
 ​	工作两年了，没有系统的学习过Java知识体系，现在对未来一年做了一个规划，搭建此博客，记录后续学习笔记，也算是为了锻炼自己的文字表达能力。
 
@@ -17,11 +17,11 @@ typora-root-url: Hexo-GitHub-搭建我的博客
 
 ​	废话不多话，为何我要搭建GitHub Pages博客？？？
 
-# 二、Github Pages
+# Github Pages
 
 [Github Pages](https://pages.github.com/) 是面向用户、组织和项目开放的公共静态页面搭建托管服 务，站点可以被免费托管在 Github 上，你可以选择使用 Github Pages 默 认提供的域名 github.io 或者自定义域名来发布站点。Github Pages 支持 自动利用 Jekyll 生成站点，也同样支持纯 HTML 文档，将你的 Jekyll 站 点托管在 Github Pages 上是一个不错的选择。
 
-# 三、开始搭建Github Pages
+# 开始搭建Github Pages
 
 ## 1、注册属于你自己的Github账号
 
@@ -58,7 +58,7 @@ typora-root-url: Hexo-GitHub-搭建我的博客
 
 接下来就需要搭建Hexo了
 
-# 四、Hexo
+# Hexo
 
 ## 准备工作
 
@@ -154,7 +154,7 @@ npm install hexo-deployer-git --save
 
 接下来就是将Hexo部署到我们的Github仓库上
 
-1. # 部署到Github
+# 部署到Github
 
 ## 1.检查SSH keys的设置
 
@@ -224,13 +224,13 @@ hexo d
 
 到了这你以为就结束了吗？没有，还有坑没有给你们填好。
 
-# 六、最后的补充
+# 最后的补充
 
 1. 电脑重装了系统/多台电脑写博客？那就赶紧戳这里[使用hexo，如果换了电脑怎么更新博客？](https://www.zhihu.com/question/21193762)
 2. 不知道如何编写Markdown语法？[Markdown——入门指南](http://www.jianshu.com/p/1e402922ee32/)
 3. 想要给网站添加图片？请把图片放入根目录 *source\* 下建立一个文件夹，当你执行hexo g的时候此文件夹自动生成到public中。
 
-# 补充：
+# 
 
 **hexo的next主题个性化教程:打造炫酷网站**
 
