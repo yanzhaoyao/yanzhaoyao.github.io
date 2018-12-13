@@ -106,18 +106,18 @@
 
 
 
-<meta name="description" content="[TOC] MySQL服务器参数类型基于参数的作用域： 全局参数 1set global autocommit = ON/OFF; 会话参数(会话参数不单独设置则会采用全局参数) 1set session autocommit = ON/OFF; 注意：  全局参数的设定对于已经存在的会话无法生效 会话参数的设定随着会话的销毁而失效 全局类的统一配置建议配置在默认配置文件中，否则重启服务会导致配置">
+<meta name="description" content="​    如何寻找MySQL配置文件，MySQL内存参数如何配置">
 <meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL配置优化">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/11/MySQL配置优化/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] MySQL服务器参数类型基于参数的作用域： 全局参数 1set global autocommit = ON/OFF; 会话参数(会话参数不单独设置则会采用全局参数) 1set session autocommit = ON/OFF; 注意：  全局参数的设定对于已经存在的会话无法生效 会话参数的设定随着会话的销毁而失效 全局类的统一配置建议配置在默认配置文件中，否则重启服务会导致配置">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    如何寻找MySQL配置文件，MySQL内存参数如何配置">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-11T14:43:44.876Z">
+<meta property="og:updated_time" content="2018-12-13T15:04:04.126Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL配置优化">
-<meta name="twitter:description" content="[TOC] MySQL服务器参数类型基于参数的作用域： 全局参数 1set global autocommit = ON/OFF; 会话参数(会话参数不单独设置则会采用全局参数) 1set session autocommit = ON/OFF; 注意：  全局参数的设定对于已经存在的会话无法生效 会话参数的设定随着会话的销毁而失效 全局类的统一配置建议配置在默认配置文件中，否则重启服务会导致配置">
+<meta name="twitter:description" content="​    如何寻找MySQL配置文件，MySQL内存参数如何配置">
 
 
 
@@ -153,7 +153,7 @@
 
 
 
-  <title>MySQL配置优化 | YShine's Bolg</title>
+  <title>MySQL配置优化 | Luxey's Space</title>
   
 
 
@@ -197,12 +197,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -329,13 +329,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/11/MySQL配置优化/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  644
+                  749
                 </span>
               
 
@@ -451,7 +451,11 @@
       
 
       
-        <p>[TOC]</p>
+        <p>​    如何寻找MySQL配置文件，MySQL内存参数如何配置</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
 <h1 id="MySQL服务器参数类型"><a href="#MySQL服务器参数类型" class="headerlink" title="MySQL服务器参数类型"></a>MySQL服务器参数类型</h1><p>基于参数的作用域：</p>
 <p>全局参数</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set global autocommit = ON/OFF;</span><br></pre></td></tr></table></figure>
@@ -490,13 +494,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -623,9 +656,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -636,7 +669,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -731,7 +764,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

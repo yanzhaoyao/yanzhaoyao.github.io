@@ -106,22 +106,22 @@
 
 
 
-<meta name="description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
+<meta name="description" content="mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端">
 <meta name="keywords" content="MySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL查询优化详解">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/120622313511055.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/1544227223850.png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/1544227253819.png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/1544227841219.png">
-<meta property="og:updated_time" content="2018-12-10T13:49:42.571Z">
+<meta property="og:updated_time" content="2018-12-13T14:54:29.783Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL查询优化详解">
-<meta name="twitter:description" content="[TOC] mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端  一、mysql 客户端/服务端通信Mysql客户端与服务端的通信方式是“半双工”； 全双工：双向通信，发送同时也可以接收半双工：双向通信，同时只能接收或者是发送，无法同时做操作单工：只能单一方向传送 半双工通信：在任何一个时刻，要么是有服务器向客户端发送数据，要么">
+<meta name="twitter:description" content="mysql 查询优化-查询执行的路径  mysql 客户端/服务端通信 查询缓存 查询优化处理 查询执行引擎 返回客户端">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/120622313511055.Png">
 
 
@@ -158,7 +158,7 @@
 
 
 
-  <title>MySQL查询优化详解 | YShine's Bolg</title>
+  <title>MySQL查询优化详解 | Luxey's Space</title>
   
 
 
@@ -202,12 +202,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -334,13 +334,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/07/MySQL查询优化详解/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -419,7 +419,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  4.3k
+                  4.4k
                 </span>
               
 
@@ -435,7 +435,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  17
+                  18
                 </span>
               
             </div>
@@ -456,8 +456,7 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="mysql-查询优化-查询执行的路径"><a href="#mysql-查询优化-查询执行的路径" class="headerlink" title="mysql 查询优化-查询执行的路径"></a>mysql 查询优化-查询执行的路径</h1><p><img src="/2018/12/07/MySQL查询优化详解/120622313511055.Png" alt="120622313511055"></p>
+        <h1 id="mysql-查询优化-查询执行的路径"><a href="#mysql-查询优化-查询执行的路径" class="headerlink" title="mysql 查询优化-查询执行的路径"></a>mysql 查询优化-查询执行的路径</h1><p><img src="/2018/12/07/MySQL查询优化详解/120622313511055.Png" alt="120622313511055"></p>
 <ol>
 <li>mysql 客户端/服务端通信</li>
 <li>查询缓存</li>
@@ -465,7 +464,11 @@
 <li>查询执行引擎</li>
 <li>返回客户端</li>
 </ol>
-<h1 id="一、mysql-客户端-服务端通信"><a href="#一、mysql-客户端-服务端通信" class="headerlink" title="一、mysql 客户端/服务端通信"></a>一、mysql 客户端/服务端通信</h1><p>Mysql客户端与服务端的通信方式是“半双工”；</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="mysql-客户端-服务端通信"><a href="#mysql-客户端-服务端通信" class="headerlink" title="mysql 客户端/服务端通信"></a>mysql 客户端/服务端通信</h1><p>Mysql客户端与服务端的通信方式是“半双工”；</p>
 <p><strong>全双工</strong>：双向通信，发送同时也可以接收<br><strong>半双工</strong>：双向通信，同时只能接收或者是发送，无法同时做操作<br><strong>单工</strong>：只能单一方向传送</p>
 <p><strong>半双工通信</strong>：<br>在任何一个时刻，要么是有服务器向客户端发送数据，要么是客户端向服务端发送数据，这两个动作不能同时发生。所以我们无法也无需将一个消息切成小块进行传输</p>
 <p><strong>特点和限制</strong>：<br>客户端一旦开始发送消息，另一端要接收完整个消息才能响应。<br>客户端一旦开始接收数据没法停下来发送指令。</p>
@@ -522,7 +525,7 @@
 </table>
 <p>可通过kill {id}的方式进行连接的杀掉</p>
 <p><img src="/2018/12/07/MySQL查询优化详解/1544227841219.png" alt="1544227841219"></p>
-<h1 id="二、查询缓存"><a href="#二、查询缓存" class="headerlink" title="二、查询缓存"></a>二、查询缓存</h1><p><strong>工作原理</strong>：<br>缓存SELECT操作的结果集和SQL语句；<br>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集。</p>
+<h1 id="查询缓存"><a href="#查询缓存" class="headerlink" title="查询缓存"></a>查询缓存</h1><p><strong>工作原理</strong>：<br>缓存SELECT操作的结果集和SQL语句；<br>新的SELECT语句，先去查询缓存，判断是否存在可用的记录集。</p>
 <p><strong>判断标准</strong>：<br>与缓存的SQL语句，是否完全一样，区分大小写 (简单认为存储了一个key-value结构，key为sql，value为sql查询结果集)</p>
 <p><strong>查询缓存相关的系统变量</strong>：</p>
 <p>通过show variables like ‘%query_cache%’;</p>
@@ -534,7 +537,7 @@
 <p><code>query_cache_type</code>　　控制Query Cache功能的开关，可以设置为0(OFF)，1(ON)和2(DEMAND)三种：0表示关闭Query Cache功能，任何情况下都不会使用Query Cache；1表示开启Query Cache功能，但是当SELECT语句中使用的SQL_NO_CACHE提示后，将不使用Query Cache；2(DEMAND)表示开启Query Cache功能，但是只有当SELECT语句中使用了SQL_CACHE提示后，才使用Query Cache。</p>
 <p><code>query_cache_wlock_invalidate</code>　　控制当有写锁加在表上的时候，是否先让该表相关的Query Cache失效，1(TRUE)，在写锁定的同时将使该表相关的所有Query Cache 失效。0(FALSE)，在锁定时刻仍然允许读取该表相关的Query Cache。</p>
 <p><code>my.cnf</code><strong>文件中配置参数信息</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">query_cache_type=1</span><br><span class="line">query_cache_size=128M</span><br><span class="line">query_cache_limit=1M</span><br></pre></td></tr></table></figure>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">query_cache_type</span>=<span class="number">1</span></span><br><span class="line"><span class="attr">query_cache_size</span>=<span class="number">128</span>M</span><br><span class="line"><span class="attr">query_cache_limit</span>=<span class="number">1</span>M</span><br></pre></td></tr></table></figure>
 <hr>
 <p><strong>show status like ‘Qcache%’ 命令可查看缓存情况</strong></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show status like &apos;Qcache%&apos;;</span><br><span class="line">+-------------------------+-------+</span><br><span class="line">| Variable_name           | Value |</span><br><span class="line">+-------------------------+-------+</span><br><span class="line">| Qcache_free_blocks      | 0     |</span><br><span class="line">| Qcache_free_memory      | 0     |</span><br><span class="line">| Qcache_hits             | 0     |</span><br><span class="line">| Qcache_inserts          | 0     |</span><br><span class="line">| Qcache_lowmem_prunes    | 0     |</span><br><span class="line">| Qcache_not_cached       | 0     |</span><br><span class="line">| Qcache_queries_in_cache | 0     |</span><br><span class="line">| Qcache_total_blocks     | 0     |</span><br><span class="line">+-------------------------+-------+</span><br><span class="line">8 rows in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt;</span><br></pre></td></tr></table></figure>
@@ -568,7 +571,7 @@
 <p>至于说用不用mysql的查询缓存，还是要看业务模型的。</p>
 <p><strong>查询缓存-适用的业务场景</strong></p>
 <p><strong>以读为主</strong>的业务，数据生成之后就<strong>不常改变</strong>的业务<br>比如门户类、新闻类、报表类、论坛类、档案类等</p>
-<h1 id="三、查询优化处理"><a href="#三、查询优化处理" class="headerlink" title="三、查询优化处理"></a>三、查询优化处理</h1><p>查询优化处理的三个阶段：</p>
+<h1 id="查询优化处理"><a href="#查询优化处理" class="headerlink" title="查询优化处理"></a>查询优化处理</h1><p>查询优化处理的三个阶段：</p>
 <ul>
 <li><p>解析sql</p>
 <p>通过lex词法分析,yacc语法分析将sql语句解析成解析树</p>
@@ -671,8 +674,8 @@
 <p>基于索引优化MIN/MAX操作或者MyISAM存储引擎优化COUNT(*)操作，不必等到执行阶段在进行计算，查询执行计划生成的阶段即可完成优化</p>
 </li>
 </ul>
-<h1 id="四、查询执行引擎"><a href="#四、查询执行引擎" class="headerlink" title="四、查询执行引擎"></a>四、查询执行引擎</h1><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行</p>
-<h1 id="五、返回客户端"><a href="#五、返回客户端" class="headerlink" title="五、返回客户端"></a>五、返回客户端</h1><ul>
+<h1 id="查询执行引擎"><a href="#查询执行引擎" class="headerlink" title="查询执行引擎"></a>查询执行引擎</h1><p>调用插件式的存储引擎的原子API的功能进行执行计划的执行</p>
+<h1 id="返回客户端"><a href="#返回客户端" class="headerlink" title="返回客户端"></a>返回客户端</h1><ul>
 <li><p>有需要做缓存的，执行缓存操作</p>
 </li>
 <li><p>增量的返回结果：</p>
@@ -681,7 +684,7 @@
 <p>用户体验好，马上就拿到了数据</p>
 </li>
 </ul>
-<h1 id="六、测试"><a href="#六、测试" class="headerlink" title="六、测试"></a>六、测试</h1><p>表结构可以见文末尾附录</p>
+<h1 id="测试-执行计划"><a href="#测试-执行计划" class="headerlink" title="测试-执行计划"></a>测试-执行计划</h1><p>表结构可以见文末尾附录</p>
 <h2 id="执行计划-type"><a href="#执行计划-type" class="headerlink" title="执行计划-type"></a>执行计划-type</h2><h3 id="const："><a href="#const：" class="headerlink" title="const："></a>const：</h3><p>表示通过索引一次就找到了，const用于比较primary key 或者 unique索引。因为只需匹配一行数据，所有很快。如果将主键置于where列表中，mysql就能将该查询转换为一个const?<br><code>explain select * from users where id=1 \G</code></p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; explain select * from users where id=1 \G</span><br><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: users</span><br><span class="line">   partitions: NULL</span><br><span class="line">         type: const</span><br><span class="line">possible_keys: PRIMARY</span><br><span class="line">          key: PRIMARY</span><br><span class="line">      key_len: 4</span><br><span class="line">          ref: const</span><br><span class="line">         rows: 1</span><br><span class="line">     filtered: 100.00</span><br><span class="line">        Extra: NULL</span><br><span class="line">1 row in set, 1 warning (0.03 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt;</span><br></pre></td></tr></table></figure>
 <h3 id="eq-ref："><a href="#eq-ref：" class="headerlink" title="eq_ref："></a>eq_ref：</h3><p>唯一索引扫描，对于每个索引键，表中只有一条记录与之匹配。常见于主键 或 唯一索引扫描。<br><code>explain select * from users where id  in  (select userID  from user_address WHERE addr= &quot;上海&quot;) \G</code></p>
@@ -716,13 +719,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -849,9 +881,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -862,7 +894,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -933,7 +965,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-查询优化-查询执行的路径"><span class="nav-text">mysql 查询优化-查询执行的路径</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#一、mysql-客户端-服务端通信"><span class="nav-text">一、mysql 客户端/服务端通信</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、查询缓存"><span class="nav-text">二、查询缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、查询优化处理"><span class="nav-text">三、查询优化处理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#查询优化器如何找到最优执行计划"><span class="nav-text">查询优化器如何找到最优执行计划</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql-查询优化-执行计划"><span class="nav-text">mysql 查询优化-执行计划</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、查询执行引擎"><span class="nav-text">四、查询执行引擎</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五、返回客户端"><span class="nav-text">五、返回客户端</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#六、测试"><span class="nav-text">六、测试</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#执行计划-type"><span class="nav-text">执行计划-type</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#const："><span class="nav-text">const：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#eq-ref："><span class="nav-text">eq_ref：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ref："><span class="nav-text">ref：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#range："><span class="nav-text">range：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#index："><span class="nav-text">index：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#执行计划-Extra"><span class="nav-text">执行计划-Extra</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-filesort"><span class="nav-text">Using filesort</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-temporary"><span class="nav-text">Using temporary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-index："><span class="nav-text">Using index：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-where-："><span class="nav-text">Using where ：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#select-tables-optimized-away："><span class="nav-text">select tables optimized away：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#no-matching-row-in-const-table"><span class="nav-text">no matching row in const table:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录"><span class="nav-text">附录</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-查询优化-查询执行的路径"><span class="nav-text">mysql 查询优化-查询执行的路径</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-客户端-服务端通信"><span class="nav-text">mysql 客户端/服务端通信</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#查询缓存"><span class="nav-text">查询缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#查询优化处理"><span class="nav-text">查询优化处理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#查询优化器如何找到最优执行计划"><span class="nav-text">查询优化器如何找到最优执行计划</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql-查询优化-执行计划"><span class="nav-text">mysql 查询优化-执行计划</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#查询执行引擎"><span class="nav-text">查询执行引擎</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#返回客户端"><span class="nav-text">返回客户端</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#测试-执行计划"><span class="nav-text">测试-执行计划</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#执行计划-type"><span class="nav-text">执行计划-type</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#const："><span class="nav-text">const：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#eq-ref："><span class="nav-text">eq_ref：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ref："><span class="nav-text">ref：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#range："><span class="nav-text">range：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#index："><span class="nav-text">index：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#执行计划-Extra"><span class="nav-text">执行计划-Extra</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-filesort"><span class="nav-text">Using filesort</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-temporary"><span class="nav-text">Using temporary</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-index："><span class="nav-text">Using index：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Using-where-："><span class="nav-text">Using where ：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#select-tables-optimized-away："><span class="nav-text">select tables optimized away：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#no-matching-row-in-const-table"><span class="nav-text">no matching row in const table:</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录"><span class="nav-text">附录</span></a></li></ol></div>
             
 
           </div>
@@ -957,7 +989,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

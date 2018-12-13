@@ -106,18 +106,18 @@
 
 
 
-<meta name="description" content="[TOC] 1、存储引擎介绍MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[百度百科] 1、插拔式的插件方式2、存储引擎是指定在表之上的，即一个库中的每一个表都可以指定专用的存储引擎。3、不管表采用什么样的存储">
+<meta name="description" content="​    MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[百度百科]">
 <meta name="keywords" content="MySQL,性能优化,存储引擎">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL插拔式的存储引擎">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/06/MySQL插拔式的存储引擎/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 1、存储引擎介绍MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[百度百科] 1、插拔式的插件方式2、存储引擎是指定在表之上的，即一个库中的每一个表都可以指定专用的存储引擎。3、不管表采用什么样的存储">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[百度百科]">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-09T02:11:46.426Z">
+<meta property="og:updated_time" content="2018-12-13T14:46:31.379Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL插拔式的存储引擎">
-<meta name="twitter:description" content="[TOC] 1、存储引擎介绍MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[百度百科] 1、插拔式的插件方式2、存储引擎是指定在表之上的，即一个库中的每一个表都可以指定专用的存储引擎。3、不管表采用什么样的存储">
+<meta name="twitter:description" content="​    MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[百度百科]">
 
 
 
@@ -153,7 +153,7 @@
 
 
 
-  <title>MySQL插拔式的存储引擎 | YShine's Bolg</title>
+  <title>MySQL插拔式的存储引擎 | Luxey's Space</title>
   
 
 
@@ -197,12 +197,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -329,13 +329,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/06/MySQL插拔式的存储引擎/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.5k
+                  1.6k
                 </span>
               
 
@@ -451,9 +451,12 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="1、存储引擎介绍"><a href="#1、存储引擎介绍" class="headerlink" title="1、存储引擎介绍"></a>1、存储引擎介绍</h1><p>MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/8969956?fr=aladdin" target="_blank" rel="noopener">百度百科</a>]</p>
-<p><code>1、插拔式的插件方式</code><br><code>2、存储引擎是指定在表之上的，即一个库中的每一个表都可以指定专用的存储引擎。</code><br><code>3、不管表采用什么样的存储引擎，都会在数据区，产生对应的一个frm文件（表结构定义描述文件）</code></p>
+        <p>​    MySQL中的数据用各种不同的技术存储在文件（或者内存）中。这些技术中的每一种技术都使用不同的存储机制、索引技巧、锁定水平并且最终提供广泛的不同的功能和能力。通过选择不同的技术，你能够获得额外的速度或者功能，从而改善你的应用的整体功能。[<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/8969956?fr=aladdin" target="_blank" rel="noopener">百度百科</a>]</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="1-存储引擎介绍"><a href="#1-存储引擎介绍" class="headerlink" title="1. 存储引擎介绍"></a>1. 存储引擎介绍</h1><p><code>1、插拔式的插件方式</code><br><code>2、存储引擎是指定在表之上的，即一个库中的每一个表都可以指定专用的存储引擎。</code><br><code>3、不管表采用什么样的存储引擎，都会在数据区，产生对应的一个frm文件（表结构定义描述文件）</code></p>
 <h2 id="1-1-CSV存储引擎"><a href="#1-1-CSV存储引擎" class="headerlink" title="1.1 CSV存储引擎"></a>1.1 CSV存储引擎</h2><h3 id="1-1-1-mysql官网介绍CVS链接"><a href="#1-1-1-mysql官网介绍CVS链接" class="headerlink" title="1.1.1 mysql官网介绍CVS链接"></a>1.1.1 mysql官网介绍<a href="https://dev.mysql.com/doc/refman/5.7/en/csv-storage-engine.html" target="_blank" rel="noopener">CVS链接</a></h3><h2 id="1-1-2-特点："><a href="#1-1-2-特点：" class="headerlink" title="1.1.2 特点："></a>1.1.2 特点：</h2><p>不能定义索引、列定义必须为<code>NOT NULL</code>、不能设置<code>自增列</code><br>​    –&gt;不适用大表或者数据的在线处理<br><code>CSV</code>数据的存储用<code>,</code>隔开，可直接编辑<code>CSV</code>文件进行数据的编排<br>​    –&gt;数据安全性低<br>注：编辑之后，要生效使用flush table XXX 命令</p>
 <h3 id="1-1-3-应用场景"><a href="#1-1-3-应用场景" class="headerlink" title="1.1.3 应用场景"></a>1.1.3 应用场景</h3><p>数据的快速导出导入<br>表格直接转换成CSV</p>
 <h2 id="1-2-Archive存储引擎"><a href="#1-2-Archive存储引擎" class="headerlink" title="1.2 Archive存储引擎"></a>1.2 Archive存储引擎</h2><h3 id="1-2-1-MySQL官网介绍Archive链接"><a href="#1-2-1-MySQL官网介绍Archive链接" class="headerlink" title="1.2.1 MySQL官网介绍Archive链接"></a>1.2.1 MySQL官网介绍<a href="https://dev.mysql.com/doc/refman/5.7/en/archive-storage-engine.html" target="_blank" rel="noopener">Archive链接</a></h3><p>The <code>ARCHIVE</code> storage engine produces special-purpose tables that store large amounts of unindexed data in a very small footprint.</p>
@@ -670,13 +673,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -807,9 +839,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -820,7 +852,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -891,7 +923,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1、存储引擎介绍"><span class="nav-text">1、存储引擎介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-CSV存储引擎"><span class="nav-text">1.1 CSV存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-1-mysql官网介绍CVS链接"><span class="nav-text">1.1.1 mysql官网介绍CVS链接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-2-特点："><span class="nav-text">1.1.2 特点：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-3-应用场景"><span class="nav-text">1.1.3 应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-Archive存储引擎"><span class="nav-text">1.2 Archive存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-MySQL官网介绍Archive链接"><span class="nav-text">1.2.1 MySQL官网介绍Archive链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-特点"><span class="nav-text">1.2.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-应用场景"><span class="nav-text">1.2.3 应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-Memory存储引擎"><span class="nav-text">1.3 Memory存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-MySQL官网Memory存储引擎链接"><span class="nav-text">1.3.1 MySQL官网Memory存储引擎链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-特点"><span class="nav-text">1.3.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-应用场景"><span class="nav-text">1.3.3 应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-Myisam存储引擎"><span class="nav-text">1.4 Myisam存储引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-1-MySQL官网Myisam存储引擎链接"><span class="nav-text">1.4.1 MySQL官网Myisam存储引擎链接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-2-特点"><span class="nav-text">1.4.2 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-Innodb存储引擎"><span class="nav-text">1.5 Innodb存储引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-1-MySQL官网Innodb存储引擎链接"><span class="nav-text">1.5.1 MySQL官网Innodb存储引擎链接</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2、对比"><span class="nav-text">2、对比</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-存储引擎介绍"><span class="nav-text">1. 存储引擎介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-CSV存储引擎"><span class="nav-text">1.1 CSV存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-1-mysql官网介绍CVS链接"><span class="nav-text">1.1.1 mysql官网介绍CVS链接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-2-特点："><span class="nav-text">1.1.2 特点：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-3-应用场景"><span class="nav-text">1.1.3 应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-Archive存储引擎"><span class="nav-text">1.2 Archive存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-1-MySQL官网介绍Archive链接"><span class="nav-text">1.2.1 MySQL官网介绍Archive链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-2-特点"><span class="nav-text">1.2.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-3-应用场景"><span class="nav-text">1.2.3 应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3-Memory存储引擎"><span class="nav-text">1.3 Memory存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-1-MySQL官网Memory存储引擎链接"><span class="nav-text">1.3.1 MySQL官网Memory存储引擎链接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-2-特点"><span class="nav-text">1.3.2 特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-3-应用场景"><span class="nav-text">1.3.3 应用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-Myisam存储引擎"><span class="nav-text">1.4 Myisam存储引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-4-1-MySQL官网Myisam存储引擎链接"><span class="nav-text">1.4.1 MySQL官网Myisam存储引擎链接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-2-特点"><span class="nav-text">1.4.2 特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-Innodb存储引擎"><span class="nav-text">1.5 Innodb存储引擎</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-5-1-MySQL官网Innodb存储引擎链接"><span class="nav-text">1.5.1 MySQL官网Innodb存储引擎链接</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2、对比"><span class="nav-text">2、对比</span></a></li></ol></div>
             
 
           </div>
@@ -915,7 +947,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

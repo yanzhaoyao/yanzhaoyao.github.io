@@ -106,19 +106,19 @@
 
 
 
-<meta name="description" content="[TOC] 1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 2. 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主">
+<meta name="description" content="工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主要解决：主要解决接口选择">
 <meta name="keywords" content="设计模式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="设计模式（一）--工厂模式（Factory Pattern）">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 2. 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主要解决：主要解决接口选择">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/11/23/设计模式（一）-工厂模式（Factory%20Pattern）/FactoryPattern.png">
-<meta property="og:updated_time" content="2018-11-29T14:20:01.370Z">
+<meta property="og:updated_time" content="2018-12-13T15:07:17.526Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="设计模式（一）--工厂模式（Factory Pattern）">
-<meta name="twitter:description" content="[TOC] 1. 工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 2. 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主">
+<meta name="twitter:description" content="工厂模式工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。 介绍 意图：定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。  主要解决：主要解决接口选择">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/11/23/设计模式（一）-工厂模式（Factory%20Pattern）/FactoryPattern.png">
 
 
@@ -155,7 +155,7 @@
 
 
 
-  <title>设计模式（一）--工厂模式（Factory Pattern） | YShine's Bolg</title>
+  <title>设计模式（一）--工厂模式（Factory Pattern） | Luxey's Space</title>
   
 
 
@@ -199,12 +199,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -331,13 +331,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -453,10 +453,9 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="1-工厂模式"><a href="#1-工厂模式" class="headerlink" title="1. 工厂模式"></a>1. 工厂模式</h1><p>工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
+        <h1 id="工厂模式"><a href="#工厂模式" class="headerlink" title="工厂模式"></a>工厂模式</h1><p>工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。</p>
 <p>在工厂模式中，我们在创建对象时不会对客户端暴露创建逻辑，并且是通过使用一个共同的接口来指向新创建的对象。</p>
-<h1 id="2-介绍"><a href="#2-介绍" class="headerlink" title="2. 介绍"></a>2. 介绍</h1><ul>
+<h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><ul>
 <li><p><strong>意图：</strong>定义一个创建对象的接口，让其子类自己决定实例化哪一个工厂类，工厂模式使其创建过程延迟到子类进行。</p>
 </li>
 <li><p><strong>主要解决：</strong>主要解决接口选择的问题。</p>
@@ -474,7 +473,7 @@
 <li><p><strong>注意事项：</strong>作为一种创建类模式，在任何需要生成复杂对象的地方，都可以使用工厂方法模式。有一点需要注意的地方就是复杂对象适合使用工厂模式，而简单对象，特别是只需要通过 new 就可以完成创建的对象，无需使用工厂模式。如果使用工厂模式，就需要引入一个工厂类，会增加系统的复杂度。</p>
 </li>
 </ul>
-<h1 id="3-实现"><a href="#3-实现" class="headerlink" title="3. 实现"></a>3. 实现</h1><p>假定我们现在要实现一个发布最新款式手机的功能，包含各种品牌（Iphone、HUAWEI、Vivo）等</p>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><p>假定我们现在要实现一个发布最新款式手机的功能，包含各种品牌（Iphone、HUAWEI、Vivo）等</p>
 <p><img src="/2018/11/23/设计模式（一）-工厂模式（Factory Pattern）/FactoryPattern.png" alt="FactoryPattern"></p>
 <h3 id="步骤-1-创建一个接口"><a href="#步骤-1-创建一个接口" class="headerlink" title="步骤 1 创建一个接口:"></a>步骤 1 创建一个接口:</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 手机接口</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IMobilePhone</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  发布手机</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">publish</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="步骤-2-创建实现接口的实体类。"><a href="#步骤-2-创建实现接口的实体类。" class="headerlink" title="步骤 2 创建实现接口的实体类。"></a>步骤 2 创建实现接口的实体类。</h3><p><strong>HUAWEI.java</strong></p>
@@ -487,8 +486,8 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span> 手机工厂类</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:10</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PhoneFactory</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> IMobilePhone <span class="title">getPhone</span><span class="params">(String trademaek)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(trademaek == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"iphone"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Iphone();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"huawei"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> HUAWEI();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(trademaek.equalsIgnoreCase(<span class="string">"vivo"</span>))&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Vivo();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。"><a href="#步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。" class="headerlink" title="步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。"></a>步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。</h3><p><strong>FactoryPatternDemo.java</strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@description</span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@auther</span> yanzhaoyao</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2018/11/27 21:15</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FactoryPatternDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        PhoneFactory phoneFactory = <span class="keyword">new</span> PhoneFactory();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone iphone = phoneFactory.getPhone(<span class="string">"iphone"</span>);</span><br><span class="line">        iphone.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone huawei = phoneFactory.getPhone(<span class="string">"huawei"</span>);</span><br><span class="line">        huawei.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone vivo = phoneFactory.getPhone(<span class="string">"vivo"</span>);</span><br><span class="line">        vivo.publish();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="步骤-5-执行程序，输出结果："><a href="#步骤-5-执行程序，输出结果：" class="headerlink" title="步骤 5 执行程序，输出结果："></a>步骤 5 执行程序，输出结果：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate 20</span><br><span class="line">发布：vivo X23</span><br></pre></td></tr></table></figure>
-<h1 id="4-总结"><a href="#4-总结" class="headerlink" title="4. 总结"></a>4. 总结</h1><p><strong>优点：</strong> 1、一个调用者想创建一个对象，只要知道其名称就可以了。 2、扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。 3、屏蔽产品的具体实现，调用者只关心产品的接口。</p>
+<h3 id="步骤-5-执行程序，输出结果："><a href="#步骤-5-执行程序，输出结果：" class="headerlink" title="步骤 5 执行程序，输出结果："></a>步骤 5 执行程序，输出结果：</h3><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate <span class="number">20</span></span><br><span class="line">发布：vivo X23</span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p><strong>优点：</strong> 1、一个调用者想创建一个对象，只要知道其名称就可以了。 2、扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。 3、屏蔽产品的具体实现，调用者只关心产品的接口。</p>
 <p><strong>缺点：</strong>每次增加一个产品时（比如添加一个OPPO手机发布），都需要增加一个具体类（<strong>OPPO.java</strong>）和修改对象实现工厂（<strong>PhoneFactory.java</strong>），使得系统中类的个数成倍增加，在一定程度上增加了系统的复杂度，同时也增加了系统具体类的依赖。违反了开闭原则，这并不是什么好事。</p>
 
       
@@ -500,13 +499,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -633,9 +661,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -646,7 +674,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -717,7 +745,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-工厂模式"><span class="nav-text">1. 工厂模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-介绍"><span class="nav-text">2. 介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-实现"><span class="nav-text">3. 实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-1-创建一个接口"><span class="nav-text">步骤 1 创建一个接口:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-2-创建实现接口的实体类。"><span class="nav-text">步骤 2 创建实现接口的实体类。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。"><span class="nav-text">步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。"><span class="nav-text">步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-5-执行程序，输出结果："><span class="nav-text">步骤 5 执行程序，输出结果：</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#4-总结"><span class="nav-text">4. 总结</span></a></li></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#工厂模式"><span class="nav-text">工厂模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#介绍"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现"><span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-1-创建一个接口"><span class="nav-text">步骤 1 创建一个接口:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-2-创建实现接口的实体类。"><span class="nav-text">步骤 2 创建实现接口的实体类。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-3-创建一个工厂，生成基于给定信息的实体类的对象。"><span class="nav-text">步骤 3 创建一个工厂，生成基于给定信息的实体类的对象。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-4-使用该工厂，通过传递类型信息来获取实体类的对象。"><span class="nav-text">步骤 4 使用该工厂，通过传递类型信息来获取实体类的对象。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤-5-执行程序，输出结果："><span class="nav-text">步骤 5 执行程序，输出结果：</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></div>
             
 
           </div>
@@ -741,7 +769,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

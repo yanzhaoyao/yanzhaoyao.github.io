@@ -106,19 +106,19 @@
 
 
 
-<meta name="description" content="[TOC] MySQL“慢SQL”定位123数据库调优我个人觉得必须要明白两件事    1.定位问题（你得知道问题出在哪里，要不然从哪里调优呢）    2.解决问题（这个没有基本的方法来处理，因为不同的问题处理的方式方法不一样，得从实践中不断的探索，如sql调优，配置优化，硬件升级等等） 这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sq">
+<meta name="description" content="​    这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sql语句是花时间最长的。">
 <meta name="keywords" content="MySQL,慢sql">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL如何定位慢sql">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/08/MySQL如何定位慢sql/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] MySQL“慢SQL”定位123数据库调优我个人觉得必须要明白两件事    1.定位问题（你得知道问题出在哪里，要不然从哪里调优呢）    2.解决问题（这个没有基本的方法来处理，因为不同的问题处理的方式方法不一样，得从实践中不断的探索，如sql调优，配置优化，硬件升级等等） 这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sq">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sql语句是花时间最长的。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/08/MySQL如何定位慢sql/QQ截图20160328172049.jpg">
-<meta property="og:updated_time" content="2018-12-09T02:24:19.209Z">
+<meta property="og:updated_time" content="2018-12-13T14:42:08.630Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL如何定位慢sql">
-<meta name="twitter:description" content="[TOC] MySQL“慢SQL”定位123数据库调优我个人觉得必须要明白两件事    1.定位问题（你得知道问题出在哪里，要不然从哪里调优呢）    2.解决问题（这个没有基本的方法来处理，因为不同的问题处理的方式方法不一样，得从实践中不断的探索，如sql调优，配置优化，硬件升级等等） 这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sq">
+<meta name="twitter:description" content="​    这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sql语句是花时间最长的。">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/12/08/MySQL如何定位慢sql/QQ截图20160328172049.jpg">
 
 
@@ -155,7 +155,7 @@
 
 
 
-  <title>MySQL如何定位慢sql | YShine's Bolg</title>
+  <title>MySQL如何定位慢sql | Luxey's Space</title>
   
 
 
@@ -199,12 +199,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -331,13 +331,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/08/MySQL如何定位慢sql/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.2k
+                  1.3k
                 </span>
               
 
@@ -453,9 +453,12 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="MySQL“慢SQL”定位"><a href="#MySQL“慢SQL”定位" class="headerlink" title="MySQL“慢SQL”定位"></a>MySQL“慢SQL”定位</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">数据库调优我个人觉得必须要明白两件事</span><br><span class="line">    1.定位问题（你得知道问题出在哪里，要不然从哪里调优呢）</span><br><span class="line">    2.解决问题（这个没有基本的方法来处理，因为不同的问题处理的方式方法不一样，得从实践中不断的探索，如sql调优，配置优化，硬件升级等等）</span><br></pre></td></tr></table></figure>
-<p>这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sql语句是花时间最长的。</p>
+        <p>​    这一篇文章将会教会你如何来定位一个慢查询的sql，如果你是一个初学者，很想知道在mysql中如何来定位哪些sql语句是花时间最长的。</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="MySQL“慢SQL”定位"><a href="#MySQL“慢SQL”定位" class="headerlink" title="MySQL“慢SQL”定位"></a>MySQL“慢SQL”定位</h1><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">数据库调优我个人觉得必须要明白两件事</span><br><span class="line">    <span class="number">1.</span>定位问题（你得知道问题出在哪里，要不然从哪里调优呢）</span><br><span class="line">    <span class="number">2.</span>解决问题（这个没有基本的方法来处理，因为不同的问题处理的方式方法不一样，得从实践中不断的探索，如sql调优，配置优化，硬件升级等等）</span><br></pre></td></tr></table></figure>
 <h2 id="步骤1：查询是否开启了慢查询"><a href="#步骤1：查询是否开启了慢查询" class="headerlink" title="步骤1：查询是否开启了慢查询"></a>步骤1：查询是否开启了慢查询</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show variables like &apos;%slow%&apos;;</span><br><span class="line">+---------------------------+--------------------------------+</span><br><span class="line">| Variable_name             | Value                          |</span><br><span class="line">+---------------------------+--------------------------------+</span><br><span class="line">| log_slow_admin_statements | OFF                            |</span><br><span class="line">| log_slow_slave_statements | OFF                            |</span><br><span class="line">| slow_launch_time          | 2                              |</span><br><span class="line">| slow_query_log            | ON                             |</span><br><span class="line">| slow_query_log_file       | /data/mysql/localhost-slow.log |</span><br><span class="line">+---------------------------+--------------------------------+</span><br><span class="line">5 rows in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt;</span><br></pre></td></tr></table></figure>
 <p>以MySQL5.7为例</p>
 <p>我这里是开启了，没有开启的，直接<code>set global slow_query_log=on;</code>就ok了。 </p>
@@ -500,13 +503,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -635,9 +667,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -648,7 +680,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -743,7 +775,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

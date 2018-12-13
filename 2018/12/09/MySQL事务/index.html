@@ -106,21 +106,21 @@
 
 
 
-<meta name="description" content="[TOC] 一、什么是事务事务（Transaction），一般是指要做的或所做的事情。在计算机术语中是指访问并可能更新数据库中各种数据项的一个程序执行单元(unit)。 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 典型事务场景(转账)： 12update user_account set balance =">
+<meta name="description" content="​    数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 ​    事务的ACID特性，事务并发带来了哪些特性，事务的四种隔离级别。">
 <meta name="keywords" content="事务,MySQL">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL事务">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL事务/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 一、什么是事务事务（Transaction），一般是指要做的或所做的事情。在计算机术语中是指访问并可能更新数据库中各种数据项的一个程序执行单元(unit)。 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 典型事务场景(转账)： 12update user_account set balance =">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 ​    事务的ACID特性，事务并发带来了哪些特性，事务的四种隔离级别。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL事务/120910194139032.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL事务/120910194139036.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL事务/120910194139040.Png">
-<meta property="og:updated_time" content="2018-12-09T05:43:15.443Z">
+<meta property="og:updated_time" content="2018-12-13T14:40:59.704Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL事务">
-<meta name="twitter:description" content="[TOC] 一、什么是事务事务（Transaction），一般是指要做的或所做的事情。在计算机术语中是指访问并可能更新数据库中各种数据项的一个程序执行单元(unit)。 数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 典型事务场景(转账)： 12update user_account set balance =">
+<meta name="twitter:description" content="​    数据库事务(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列操作，要么完全地执行，要么完全地不执行。 ​    事务的ACID特性，事务并发带来了哪些特性，事务的四种隔离级别。">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL事务/120910194139032.Png">
 
 
@@ -157,7 +157,7 @@
 
 
 
-  <title>MySQL事务 | YShine's Bolg</title>
+  <title>MySQL事务 | Luxey's Space</title>
   
 
 
@@ -201,12 +201,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -333,13 +333,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/09/MySQL事务/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -418,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1.3k
+                  1.5k
                 </span>
               
 
@@ -434,7 +434,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  5
                 </span>
               
             </div>
@@ -455,15 +455,20 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="一、什么是事务"><a href="#一、什么是事务" class="headerlink" title="一、什么是事务"></a>一、什么是事务</h1><p><a href="https://baike.baidu.com/item/%E4%BA%8B%E5%8A%A1/5945882" target="_blank" rel="noopener">事务</a>（Transaction），一般是指要做的或所做的事情。在计算机<a href="https://baike.baidu.com/item/%E6%9C%AF%E8%AF%AD" target="_blank" rel="noopener">术语</a>中是指访问并可能更新数据库中各种<a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E9%A1%B9/3227309" target="_blank" rel="noopener">数据项</a>的一个程序执行单元(unit)。</p>
+        <p>​    <a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/9744607" target="_blank" rel="noopener">数据库事务</a>(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列<a href="https://baike.baidu.com/item/%E6%93%8D%E4%BD%9C/33052" target="_blank" rel="noopener">操作</a>，要么完全地执行，要么完全地不执行。</p>
+<p>​    事务的ACID特性，事务并发带来了哪些特性，事务的四种隔离级别。</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="什么是事务"><a href="#什么是事务" class="headerlink" title="什么是事务"></a>什么是事务</h1><p><a href="https://baike.baidu.com/item/%E4%BA%8B%E5%8A%A1/5945882" target="_blank" rel="noopener">事务</a>（Transaction），一般是指要做的或所做的事情。在计算机<a href="https://baike.baidu.com/item/%E6%9C%AF%E8%AF%AD" target="_blank" rel="noopener">术语</a>中是指访问并可能更新数据库中各种<a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E9%A1%B9/3227309" target="_blank" rel="noopener">数据项</a>的一个程序执行单元(unit)。</p>
 <p><a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1/9744607" target="_blank" rel="noopener">数据库事务</a>(Database Transaction) ，是指作为单个逻辑工作单元执行的一系列<a href="https://baike.baidu.com/item/%E6%93%8D%E4%BD%9C/33052" target="_blank" rel="noopener">操作</a>，要么完全地执行，要么完全地不执行。</p>
 <p>典型事务场景(转账)：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">update user_account set balance = balance - 1000 where userID = 3;</span><br><span class="line">update user_account set balance = balance +1000 where userID = 1;</span><br></pre></td></tr></table></figure>
 <p>mysql中如何开启事务：<br><code>begin</code> / start <code>transaction</code> – 手工<br><code>commit</code> / <code>rollback</code> – 事务提交或回滚<br><code>set session autocommit = on/off;</code> – 设定事务是否自动开启</p>
 <p>JDBC 编程：<br><code>connection.setAutoCommit（boolean）;</code></p>
 <p>Spring 事务AOP编程：<br><code>expression=execution（com.xxx.service.*.*(..)）</code></p>
-<h1 id="二、事务的ACID特性"><a href="#二、事务的ACID特性" class="headerlink" title="二、事务的ACID特性"></a>二、事务的ACID特性</h1><ul>
+<h1 id="事务的ACID特性"><a href="#事务的ACID特性" class="headerlink" title="事务的ACID特性"></a>事务的ACID特性</h1><ul>
 <li><p><strong>原子性（Atomicity）</strong></p>
 <p>​    整个事务中的所有操作，要么全部完成，要么全部不完成，不可能停滞在中间某个环节。事务在执行过程中发生错误，会被<a href="https://baike.baidu.com/item/%E5%9B%9E%E6%BB%9A" target="_blank" rel="noopener">回滚</a>（Rollback）到事务开始前的状态，就像这个事务从来没有执行过一样。</p>
 </li>
@@ -478,20 +483,20 @@
 <p>事务所做的修改就会永久保存，不会因为系统意外导致数据的丢失</p>
 </li>
 </ul>
-<h1 id="三、事务并发带来了哪些问题"><a href="#三、事务并发带来了哪些问题" class="headerlink" title="三、事务并发带来了哪些问题"></a>三、事务并发带来了哪些问题</h1><p>如下图，事务A和事务B 同时操作id为1的user</p>
+<h1 id="事务并发带来了哪些问题"><a href="#事务并发带来了哪些问题" class="headerlink" title="事务并发带来了哪些问题"></a>事务并发带来了哪些问题</h1><p>如下图，事务A和事务B 同时操作id为1的user</p>
 <h2 id="脏读-dirty-read"><a href="#脏读-dirty-read" class="headerlink" title="脏读(dirty read)"></a>脏读(dirty read)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1、事务B 修改id为1的用户age由16 --&gt; 18</span><br><span class="line">2、事务A 查询id为1的用户，获取到age为18</span><br><span class="line">3、事务B 此时因为某些意外原因，rollback</span><br><span class="line">（要理解1和3为同一个事务（最小执行单元））</span><br><span class="line">此时数据库中的id为1的记录age还是16,而事务B并不之情，以为age是18，此时就出问题了，所谓的脏读</span><br></pre></td></tr></table></figure>
 <p><img src="/2018/12/09/MySQL事务/120910194139032.Png" alt="120910194139032"></p>
 <hr>
 <h2 id="不可重复读-nonrepeatableread"><a href="#不可重复读-nonrepeatableread" class="headerlink" title="不可重复读(nonrepeatableread)"></a>不可重复读(nonrepeatableread)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1、事务A 查询id为1的用户，获取到age为16</span><br><span class="line">2、事务B 修改id为1的用户，age由16 --&gt; 18</span><br><span class="line">3、事务B commit</span><br><span class="line">4、事务A 查询id为1的用户，获取到age为18</span><br><span class="line">（1和4一个事务 2和3一个事务，要理解成不可分割的最小执行单元）</span><br><span class="line">此时事务A两次查询不一样，在一个事务重复读数据内容不一样，所谓的 不可重复读</span><br></pre></td></tr></table></figure>
 <p><img src="/2018/12/09/MySQL事务/120910194139036.Png" alt="120910194139036"></p>
 <hr>
-<h2 id="幻读-Phantom-read"><a href="#幻读-Phantom-read" class="headerlink" title="幻读(Phantom read)"></a>幻读(Phantom read)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1、事务A 查询id为age &gt; 15的用户，获取到一个用户，id为1，age为16的用户</span><br><span class="line">2、事务B 新增id为2，name为‘Bob’，age为22的用户</span><br><span class="line">3、事务A 再次查询age &gt; 15的用户，获取到两个用户</span><br><span class="line">（1和3一个事务 ，要理解成不可分割的最小执行单元）</span><br><span class="line">此时事务A两次查询不一样，在一个事务重复读数据的数量一样，产生了幻觉，所谓的 不可重复读</span><br></pre></td></tr></table></figure>
+<h2 id="幻读-Phantom-read"><a href="#幻读-Phantom-read" class="headerlink" title="幻读(Phantom read)"></a>幻读(Phantom read)</h2><figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>、事务A 查询id为age &gt; <span class="number">15</span>的用户，获取到一个用户，id为<span class="number">1</span>，age为<span class="number">16</span>的用户</span><br><span class="line"><span class="number">2</span>、事务B 新增id为<span class="number">2</span>，name为‘Bob’，age为<span class="number">22</span>的用户</span><br><span class="line"><span class="number">3</span>、事务A 再次查询age &gt; <span class="number">15</span>的用户，获取到两个用户</span><br><span class="line">（<span class="number">1</span>和<span class="number">3</span>一个事务 ，要理解成不可分割的最小执行单元）</span><br><span class="line">此时事务A两次查询不一样，在一个事务重复读数据的数量一样，产生了幻觉，所谓的 不可重复读</span><br></pre></td></tr></table></figure>
 <p><img src="/2018/12/09/MySQL事务/120910194139040.Png" alt="120910194139040"></p>
 <p><code>脏读</code>：很好理解，事务中，读取到脏数据。</p>
 <p><code>不可重复读</code>：事务中，多次读取同一个数据的内容不一样。(针对update)</p>
 <p><code>幻读</code>：事务中，多次读取同一个条件数据的数量不一样。（针对的是insert、delete）</p>
 <p>如何解决上面三种问题呢？？？往下看</p>
-<h1 id="四、事务四种隔离级别"><a href="#四、事务四种隔离级别" class="headerlink" title="四、事务四种隔离级别"></a>四、事务四种隔离级别</h1><p>SQL92，是数据库的一个ANSI/ISO标准。它定义了一种语言（SQL）以及数据库的行为（事务、隔离级别等）。</p>
+<h1 id="事务四种隔离级别"><a href="#事务四种隔离级别" class="headerlink" title="事务四种隔离级别"></a>事务四种隔离级别</h1><p>SQL92，是数据库的一个ANSI/ISO标准。它定义了一种语言（SQL）以及数据库的行为（事务、隔离级别等）。</p>
 <p>SQL92 ANSI/ISO标准：<br><a href="http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt" target="_blank" rel="noopener">http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt</a></p>
 <h2 id="四种隔离级别"><a href="#四种隔离级别" class="headerlink" title="四种隔离级别"></a>四种隔离级别</h2><ul>
 <li><p><strong>Read Uncommitted（未提交读）</strong> –未解决并发问题</p>
@@ -560,13 +565,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -695,9 +729,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -708,7 +742,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -779,7 +813,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、什么是事务"><span class="nav-text">一、什么是事务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、事务的ACID特性"><span class="nav-text">二、事务的ACID特性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、事务并发带来了哪些问题"><span class="nav-text">三、事务并发带来了哪些问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#脏读-dirty-read"><span class="nav-text">脏读(dirty read)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不可重复读-nonrepeatableread"><span class="nav-text">不可重复读(nonrepeatableread)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幻读-Phantom-read"><span class="nav-text">幻读(Phantom read)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、事务四种隔离级别"><span class="nav-text">四、事务四种隔离级别</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#四种隔离级别"><span class="nav-text">四种隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb引擎对隔离级别的支持程度"><span class="nav-text">Innodb引擎对隔离级别的支持程度</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#什么是事务"><span class="nav-text">什么是事务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#事务的ACID特性"><span class="nav-text">事务的ACID特性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#事务并发带来了哪些问题"><span class="nav-text">事务并发带来了哪些问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#脏读-dirty-read"><span class="nav-text">脏读(dirty read)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不可重复读-nonrepeatableread"><span class="nav-text">不可重复读(nonrepeatableread)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幻读-Phantom-read"><span class="nav-text">幻读(Phantom read)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#事务四种隔离级别"><span class="nav-text">事务四种隔离级别</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#四种隔离级别"><span class="nav-text">四种隔离级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb引擎对隔离级别的支持程度"><span class="nav-text">Innodb引擎对隔离级别的支持程度</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -803,7 +837,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

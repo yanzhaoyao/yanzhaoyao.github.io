@@ -106,18 +106,18 @@
 
 
 
-<meta name="description" content="[TOC] 数据库设计三大范式第一范式（ 1NF）：​    字段具有原子性,不可再分。 所有关系型数据库系统都满足第一范式）数据库表中的字段都是单一属性的， 不可再分； 第二范式（ 2NF）：​    要求实体的属性完全依赖于主键。 所谓完全依赖是指不能存在仅依赖主键一部分的属性，如果存在， 那么这个属性和主关键字的这一部分应该分离出来形成一个新的实体， 新实体与原实体之间是一对多的关系。为实现">
+<meta name="description" content="​    数据库设计(Database Design)是指对于一个给定的应用环境，构造最优的数据库模式，建立数据库及其应用系统，使之能够有效地存储数据，满足各种用户的应用需求（信息要求和处理要求）。在数据库领域内，常常把使用数据库的各类系统统称为数据库应用系统。">
 <meta name="keywords" content="MySQL,表设计,三大范式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL数据库表设计">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/11/MySQL数据库表设计/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 数据库设计三大范式第一范式（ 1NF）：​    字段具有原子性,不可再分。 所有关系型数据库系统都满足第一范式）数据库表中的字段都是单一属性的， 不可再分； 第二范式（ 2NF）：​    要求实体的属性完全依赖于主键。 所谓完全依赖是指不能存在仅依赖主键一部分的属性，如果存在， 那么这个属性和主关键字的这一部分应该分离出来形成一个新的实体， 新实体与原实体之间是一对多的关系。为实现">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    数据库设计(Database Design)是指对于一个给定的应用环境，构造最优的数据库模式，建立数据库及其应用系统，使之能够有效地存储数据，满足各种用户的应用需求（信息要求和处理要求）。在数据库领域内，常常把使用数据库的各类系统统称为数据库应用系统。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-11T15:13:56.691Z">
+<meta property="og:updated_time" content="2018-12-13T14:51:55.508Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL数据库表设计">
-<meta name="twitter:description" content="[TOC] 数据库设计三大范式第一范式（ 1NF）：​    字段具有原子性,不可再分。 所有关系型数据库系统都满足第一范式）数据库表中的字段都是单一属性的， 不可再分； 第二范式（ 2NF）：​    要求实体的属性完全依赖于主键。 所谓完全依赖是指不能存在仅依赖主键一部分的属性，如果存在， 那么这个属性和主关键字的这一部分应该分离出来形成一个新的实体， 新实体与原实体之间是一对多的关系。为实现">
+<meta name="twitter:description" content="​    数据库设计(Database Design)是指对于一个给定的应用环境，构造最优的数据库模式，建立数据库及其应用系统，使之能够有效地存储数据，满足各种用户的应用需求（信息要求和处理要求）。在数据库领域内，常常把使用数据库的各类系统统称为数据库应用系统。">
 
 
 
@@ -153,7 +153,7 @@
 
 
 
-  <title>MySQL数据库表设计 | YShine's Bolg</title>
+  <title>MySQL数据库表设计 | Luxey's Space</title>
   
 
 
@@ -197,12 +197,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -329,13 +329,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/11/MySQL数据库表设计/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.5k
+                  2.7k
                 </span>
               
 
@@ -451,10 +451,14 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="数据库设计"><a href="#数据库设计" class="headerlink" title="数据库设计"></a>数据库设计</h1><h2 id="三大范式"><a href="#三大范式" class="headerlink" title="三大范式"></a>三大范式</h2><p>第一范式（ 1NF）：<br>​    字段具有原子性,不可再分。 所有关系型数据库系统都满足第一范式）数据库表中的字段都是单一属性的， 不可再分；</p>
-<p>第二范式（ 2NF）：<br>​    要求实体的属性完全依赖于主键。 所谓完全依赖是指不能存在仅依赖主键一部分的属性，如果存在， 那么这个属性和主关键字的这一部分应该分离出来形成一个新的实体， 新实体与原实体之间是一对多的关系。为实现区分通常需要为表加上一个列，以存储各个实例的惟一标识。简而言之， 第二范式就是属性完全依赖主键。</p>
-<p>第三范式（ 3NF）：<br>​    满足第三范式（ 3NF） 必须先满足第二范式（ 2NF）。 简而言之， 第三范式（ 3NF）要求一个数据库表中不包含已在其它表中已包含的非主键信息。</p>
+        <p>​    数据库设计(Database Design)是指对于一个给定的应用环境，构造最优的数据库模式，建立<a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8F%8A%E5%85%B6%E5%BA%94%E7%94%A8/2054396" target="_blank" rel="noopener">数据库及其应用</a>系统，使之能够有效地<a href="https://baike.baidu.com/item/%E5%AD%98%E5%82%A8%E6%95%B0%E6%8D%AE/14717603" target="_blank" rel="noopener">存储数据</a>，满足各种用户的应用需求（信息要求和处理要求）。在数据库领域内，常常把使用数据库的各类系统统称为<a href="https://baike.baidu.com/item/%E6%95%B0%E6%8D%AE%E5%BA%93%E5%BA%94%E7%94%A8%E7%B3%BB%E7%BB%9F/10440620" target="_blank" rel="noopener">数据库应用系统</a>。</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="数据库设计"><a href="#数据库设计" class="headerlink" title="数据库设计"></a>数据库设计</h1><h2 id="三大范式"><a href="#三大范式" class="headerlink" title="三大范式"></a>三大范式</h2><p><strong>第一范式（ 1NF）</strong>：<br>​    字段具有原子性,不可再分。 所有关系型数据库系统都满足第一范式）数据库表中的字段都是单一属性的， 不可再分；</p>
+<p><strong>第二范式（ 2NF）</strong>：<br>​    要求实体的属性完全依赖于主键。 所谓完全依赖是指不能存在仅依赖主键一部分的属性，如果存在， 那么这个属性和主关键字的这一部分应该分离出来形成一个新的实体， 新实体与原实体之间是一对多的关系。为实现区分通常需要为表加上一个列，以存储各个实例的惟一标识。简而言之， 第二范式就是属性完全依赖主键。</p>
+<p><strong>第三范式（ 3NF）</strong>：<br>​    满足第三范式（ 3NF） 必须先满足第二范式（ 2NF）。 简而言之， 第三范式（ 3NF）要求一个数据库表中不包含已在其它表中已包含的非主键信息。</p>
 <p>简单一点：</p>
 <ol>
 <li>每一列只有一个单一的值，不可再拆分</li>
@@ -520,13 +524,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -653,9 +686,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -666,7 +699,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -761,7 +794,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

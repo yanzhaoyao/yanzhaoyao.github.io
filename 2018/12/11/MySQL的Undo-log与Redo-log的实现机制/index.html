@@ -106,20 +106,20 @@
 
 
 
-<meta name="description" content="[TOC] 1. Undo Log是什么1.1 简介Undo Log ：​    undo意为取消，以撤销操作为目的，返回指定某个状态的操作​    undo log指事务开始之前，在操作任何数据之前,首先将需操作的数据备份到一个地方 (Undo Log) UndoLog是为了实现事务的原子性而出现的产物 Undo Log实现事务原子性：​    事务处理过程中如果出现了错误或者用户执行了 ROL">
+<meta name="description" content="​    本文将详细介绍什么是Undo Log、Redo Log。 ​    MySQL默认的Innodb在REPEATABLE READ隔离级别下,是如何通过MVCC + Undo Log，解决幻读的。">
 <meta name="keywords" content="MySQL,Undo log,Redo log">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL的Undo log与Redo log的实现机制">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/11/MySQL的Undo-log与Redo-log的实现机制/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 1. Undo Log是什么1.1 简介Undo Log ：​    undo意为取消，以撤销操作为目的，返回指定某个状态的操作​    undo log指事务开始之前，在操作任何数据之前,首先将需操作的数据备份到一个地方 (Undo Log) UndoLog是为了实现事务的原子性而出现的产物 Undo Log实现事务原子性：​    事务处理过程中如果出现了错误或者用户执行了 ROL">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    本文将详细介绍什么是Undo Log、Redo Log。 ​    MySQL默认的Innodb在REPEATABLE READ隔离级别下,是如何通过MVCC + Undo Log，解决幻读的。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/11/MySQL的Undo-log与Redo-log的实现机制/121120042327141.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/11/MySQL的Undo-log与Redo-log的实现机制/121120042327151.Png">
-<meta property="og:updated_time" content="2018-12-11T14:18:21.971Z">
+<meta property="og:updated_time" content="2018-12-13T15:00:24.653Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL的Undo log与Redo log的实现机制">
-<meta name="twitter:description" content="[TOC] 1. Undo Log是什么1.1 简介Undo Log ：​    undo意为取消，以撤销操作为目的，返回指定某个状态的操作​    undo log指事务开始之前，在操作任何数据之前,首先将需操作的数据备份到一个地方 (Undo Log) UndoLog是为了实现事务的原子性而出现的产物 Undo Log实现事务原子性：​    事务处理过程中如果出现了错误或者用户执行了 ROL">
+<meta name="twitter:description" content="​    本文将详细介绍什么是Undo Log、Redo Log。 ​    MySQL默认的Innodb在REPEATABLE READ隔离级别下,是如何通过MVCC + Undo Log，解决幻读的。">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/12/11/MySQL的Undo-log与Redo-log的实现机制/121120042327141.Png">
 
 
@@ -156,7 +156,7 @@
 
 
 
-  <title>MySQL的Undo log与Redo log的实现机制 | YShine's Bolg</title>
+  <title>MySQL的Undo log与Redo log的实现机制 | Luxey's Space</title>
   
 
 
@@ -200,12 +200,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -332,13 +332,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/11/MySQL的Undo-log与Redo-log的实现机制/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -417,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  918
+                  1k
                 </span>
               
 
@@ -433,7 +433,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -454,7 +454,12 @@
       
 
       
-        <p>[TOC]</p>
+        <p>​    本文将详细介绍什么是<code>Undo Log</code>、<code>Redo Log</code>。</p>
+<p>​    MySQL默认的Innodb在<strong>REPEATABLE READ</strong>隔离级别下,是如何通过<code>MVCC</code> + <code>Undo Log</code>，解决幻读的。</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
 <h1 id="1-Undo-Log是什么"><a href="#1-Undo-Log是什么" class="headerlink" title="1. Undo Log是什么"></a>1. Undo Log是什么</h1><h2 id="1-1-简介"><a href="#1-1-简介" class="headerlink" title="1.1 简介"></a>1.1 简介</h2><p><code>Undo Log</code> ：<br>​    <code>undo</code>意为取消，以撤销操作为目的，返回指定某个状态的操作<br>​    <code>undo log</code>指事务开始之前，在操作任何数据之前,首先将需操作的数据备份到一个地方 (<code>Undo Log</code>)</p>
 <p><strong>UndoLog是为了实现事务的原子性而出现的产物</strong></p>
 <p><code>Undo Log</code>实现事务原子性：<br>​    事务处理过程中如果出现了错误或者用户执行了 <code>ROLLBACK</code>语句,MySQL可以利用<code>Undo Log</code>中的备份<br>将数据恢复到事务开始之前的状态</p>
@@ -498,13 +503,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -635,9 +669,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -648,7 +682,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -743,7 +777,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

@@ -106,13 +106,13 @@
 
 
 
-<meta name="description" content="[TOC] 一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL">
+<meta name="description" content="​    还在认为索引相当于一本书的目录吗？带你了解MySQL底层B+tree索引机制">
 <meta name="keywords" content="MySQL,性能优化,B+tree,索引">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL底层B+tree索引机制">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    还在认为索引相当于一本书的目录吗？带你了解MySQL底层B+tree索引机制">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/wps4EA1.tmp.jpg">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/wps5B52.tmp.png">
@@ -128,10 +128,10 @@
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/120421194082079.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/120421194082084.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/120421194082088.Png">
-<meta property="og:updated_time" content="2018-12-09T02:24:37.812Z">
+<meta property="og:updated_time" content="2018-12-13T14:37:53.732Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL底层B+tree索引机制">
-<meta name="twitter:description" content="[TOC] 一、初识Mysql体系结构整体结构图   Connectors  接入方支持协议很多  Management Serveices &amp;amp; Utilities 系统管理和控制工具，例如：备份恢复，mysql复制集群等  Connection Pool 连接池：管理缓冲用户连接、用户名、密码、权限校验、线程处理等需要缓存的需求  SQL Interface SQL接口：接受用户的SQL">
+<meta name="twitter:description" content="​    还在认为索引相当于一本书的目录吗？带你了解MySQL底层B+tree索引机制">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/wps4EA1.tmp.jpg">
 
 
@@ -168,7 +168,7 @@
 
 
 
-  <title>MySQL底层B+tree索引机制 | YShine's Bolg</title>
+  <title>MySQL底层B+tree索引机制 | Luxey's Space</title>
   
 
 
@@ -212,12 +212,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -344,13 +344,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/04/MySQL底层B-tree索引机制/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3.7k
+                  3.8k
                 </span>
               
 
@@ -466,8 +466,12 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="一、初识Mysql体系结构"><a href="#一、初识Mysql体系结构" class="headerlink" title="一、初识Mysql体系结构"></a>一、初识Mysql体系结构</h1><p><strong>整体结构图</strong></p>
+        <p>​    还在认为索引相当于一本书的目录吗？带你了解MySQL底层B+tree索引机制</p>
+<a id="more"></a>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="初识Mysql体系结构"><a href="#初识Mysql体系结构" class="headerlink" title="初识Mysql体系结构"></a>初识Mysql体系结构</h1><p><strong>整体结构图</strong></p>
 <p><img src="/2018/12/04/MySQL底层B-tree索引机制/wps4EA1.tmp.jpg" alt="img"></p>
 <ul>
 <li><p>Connectors </p>
@@ -500,7 +504,7 @@
 </ul>
 <p><strong>运行时机理图</strong></p>
 <p><img src="/2018/12/04/MySQL底层B-tree索引机制/wps5B52.tmp.png" alt="img"></p>
-<h1 id="二、理解Mysql底层B-tree索引机制"><a href="#二、理解Mysql底层B-tree索引机制" class="headerlink" title="二、理解Mysql底层B+tree索引机制"></a>二、理解Mysql底层B+tree索引机制</h1><p>写在前面的话</p>
+<h1 id="理解Mysql底层B-tree索引机制"><a href="#理解Mysql底层B-tree索引机制" class="headerlink" title="理解Mysql底层B+tree索引机制"></a>理解Mysql底层B+tree索引机制</h1><p>写在前面的话</p>
 <p><strong>正确</strong>的创建<strong>合适</strong>的索引，是提升数据库查询性能的<strong>基础</strong></p>
 <h2 id="索引是什么？"><a href="#索引是什么？" class="headerlink" title="索引是什么？"></a><strong>索引是什么？</strong></h2><p>索引定义：</p>
 <p>索引是为了加速对表中数据行的检索而创建的一种分散存储的<strong>数据结构</strong></p>
@@ -624,13 +628,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -763,9 +796,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -776,7 +809,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -847,7 +880,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、初识Mysql体系结构"><span class="nav-text">一、初识Mysql体系结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、理解Mysql底层B-tree索引机制"><span class="nav-text">二、理解Mysql底层B+tree索引机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#索引是什么？"><span class="nav-text">索引是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要用索引？"><span class="nav-text">为什么要用索引？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么是B-Tree？"><span class="nav-text">为什么是B+Tree？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#二叉查找树，Binary-Search-Tree"><span class="nav-text">二叉查找树，Binary Search Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#平衡二叉查找树，Balance-binary-search-tree"><span class="nav-text">平衡二叉查找树，Balance binary search tree</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多路平衡查找树，B-Tree"><span class="nav-text">多路平衡查找树，B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加强版多路平衡查找树-B-Tree"><span class="nav-text">加强版多路平衡查找树 B+Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么选用B-Tree-？"><span class="nav-text">为什么选用B+Tree ？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mysql-B-Tree索引体现形式"><span class="nav-text">Mysql B+Tree索引体现形式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql-B-Tree索引体现形式-Myisam"><span class="nav-text">Mysql B+Tree索引体现形式 - Myisam</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql-B-Tree索引体现形式-innodb"><span class="nav-text">Mysql B+Tree索引体现形式 - innodb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb-VS-Myisam"><span class="nav-text">Innodb VS Myisam</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#索引知识补充"><span class="nav-text">索引知识补充</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#最左匹配原则"><span class="nav-text">最左匹配原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#联合索引？so-seay"><span class="nav-text">联合索引？so seay</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#覆盖索引"><span class="nav-text">覆盖索引</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#现在，你能都理解了么？"><span class="nav-text">现在，你能都理解了么？</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#初识Mysql体系结构"><span class="nav-text">初识Mysql体系结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#理解Mysql底层B-tree索引机制"><span class="nav-text">理解Mysql底层B+tree索引机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#索引是什么？"><span class="nav-text">索引是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么要用索引？"><span class="nav-text">为什么要用索引？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么是B-Tree？"><span class="nav-text">为什么是B+Tree？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#二叉查找树，Binary-Search-Tree"><span class="nav-text">二叉查找树，Binary Search Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#平衡二叉查找树，Balance-binary-search-tree"><span class="nav-text">平衡二叉查找树，Balance binary search tree</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多路平衡查找树，B-Tree"><span class="nav-text">多路平衡查找树，B-Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加强版多路平衡查找树-B-Tree"><span class="nav-text">加强版多路平衡查找树 B+Tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么选用B-Tree-？"><span class="nav-text">为什么选用B+Tree ？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Mysql-B-Tree索引体现形式"><span class="nav-text">Mysql B+Tree索引体现形式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql-B-Tree索引体现形式-Myisam"><span class="nav-text">Mysql B+Tree索引体现形式 - Myisam</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mysql-B-Tree索引体现形式-innodb"><span class="nav-text">Mysql B+Tree索引体现形式 - innodb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb-VS-Myisam"><span class="nav-text">Innodb VS Myisam</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#索引知识补充"><span class="nav-text">索引知识补充</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#最左匹配原则"><span class="nav-text">最左匹配原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#联合索引？so-seay"><span class="nav-text">联合索引？so seay</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#覆盖索引"><span class="nav-text">覆盖索引</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#现在，你能都理解了么？"><span class="nav-text">现在，你能都理解了么？</span></a></li></ol></div>
             
 
           </div>
@@ -871,7 +904,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

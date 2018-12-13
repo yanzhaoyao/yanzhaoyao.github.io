@@ -106,13 +106,13 @@
 
 
 
-<meta name="description" content="[TOC] 一、理解表锁、行锁锁是用于管理不同事务对共享资源的并发访问 表锁与行锁的区别：​    锁定粒度：表锁 &amp;gt; 行锁​    加锁效率：表锁 &amp;gt; 行锁​    冲突概率：表锁 &amp;gt; 行锁​    并发性能：表锁 &amp;lt; 行锁 InnoDB存储引擎支持行锁和表锁（另类的行锁） 二、MySQL Innodb锁类型3种类型行锁 ​    共享锁（行锁）：Shared Locks">
+<meta name="description" content="​    MySQL为什么要提供锁机制？锁能解决什么问题？ ​    如何保证数据并发访问的一致性、有效性是所在有数据库必须解决的一个问题，锁冲突也是影响数据库并发访问性能的一个重要因素。从这个角度来说，锁对数据库而言显得尤其重要，也更加复杂。  声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解">
 <meta name="keywords" content="MySQL,MySQL锁,临键锁,间隙锁,记录锁,意向锁,共享锁,排他锁,自增锁,死锁">
 <meta property="og:type" content="article">
 <meta property="og:title" content="MySQL锁">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
-<meta property="og:description" content="[TOC] 一、理解表锁、行锁锁是用于管理不同事务对共享资源的并发访问 表锁与行锁的区别：​    锁定粒度：表锁 &amp;gt; 行锁​    加锁效率：表锁 &amp;gt; 行锁​    冲突概率：表锁 &amp;gt; 行锁​    并发性能：表锁 &amp;lt; 行锁 InnoDB存储引擎支持行锁和表锁（另类的行锁） 二、MySQL Innodb锁类型3种类型行锁 ​    共享锁（行锁）：Shared Locks">
+<meta property="og:site_name" content="Luxey&#39;s Space">
+<meta property="og:description" content="​    MySQL为什么要提供锁机制？锁能解决什么问题？ ​    如何保证数据并发访问的一致性、有效性是所在有数据库必须解决的一个问题，锁冲突也是影响数据库并发访问性能的一个重要因素。从这个角度来说，锁对数据库而言显得尤其重要，也更加复杂。  声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/1544451397852.png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/1544451620296.png">
@@ -137,10 +137,10 @@
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/120910194139087.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/120910194139091.Png">
 <meta property="og:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/120910194139095.Png">
-<meta property="og:updated_time" content="2018-12-11T12:17:48.969Z">
+<meta property="og:updated_time" content="2018-12-13T15:10:39.483Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL锁">
-<meta name="twitter:description" content="[TOC] 一、理解表锁、行锁锁是用于管理不同事务对共享资源的并发访问 表锁与行锁的区别：​    锁定粒度：表锁 &amp;gt; 行锁​    加锁效率：表锁 &amp;gt; 行锁​    冲突概率：表锁 &amp;gt; 行锁​    并发性能：表锁 &amp;lt; 行锁 InnoDB存储引擎支持行锁和表锁（另类的行锁） 二、MySQL Innodb锁类型3种类型行锁 ​    共享锁（行锁）：Shared Locks">
+<meta name="twitter:description" content="​    MySQL为什么要提供锁机制？锁能解决什么问题？ ​    如何保证数据并发访问的一致性、有效性是所在有数据库必须解决的一个问题，锁冲突也是影响数据库并发访问性能的一个重要因素。从这个角度来说，锁对数据库而言显得尤其重要，也更加复杂。  声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解">
 <meta name="twitter:image" content="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/1544451397852.png">
 
 
@@ -177,7 +177,7 @@
 
 
 
-  <title>MySQL锁 | YShine's Bolg</title>
+  <title>MySQL锁 | Luxey's Space</title>
   
 
 
@@ -221,12 +221,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -353,13 +353,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/12/09/MySQL锁/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -438,7 +438,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2.1k
+                  2.2k
                 </span>
               
 
@@ -454,7 +454,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  8
+                  9
                 </span>
               
             </div>
@@ -475,11 +475,15 @@
       
 
       
-        <p>[TOC]</p>
-<h1 id="一、理解表锁、行锁"><a href="#一、理解表锁、行锁" class="headerlink" title="一、理解表锁、行锁"></a>一、理解表锁、行锁</h1><p>锁是用于管理不同事务对共享资源的并发访问</p>
+        <p>​    MySQL为什么要提供锁机制？锁能解决什么问题？</p>
+<p>​    如何保证数据并发访问的一致性、有效性是所在有数据库必须解决的一个问题，锁冲突也是影响数据库并发访问性能的一个重要因素。从这个角度来说，锁对数据库而言显得尤其重要，也更加复杂。</p>
+<blockquote>
+<p>声明：MySQL专栏学习系列，基本上是本人学习腾讯课堂《MySQL性能优化》专栏内容的笔记，并在专栏基础上进行部分知识点挖掘及理解。本人的个人能力及理解能力有限，所以有些错误的地方请大家指正，相互交流，共同进步！</p>
+</blockquote>
+<h1 id="理解表锁、行锁"><a href="#理解表锁、行锁" class="headerlink" title="理解表锁、行锁"></a>理解表锁、行锁</h1><p>锁是用于管理不同事务对共享资源的并发访问</p>
 <p>表锁与行锁的区别：<br>​    锁定粒度：表锁 &gt; 行锁<br>​    加锁效率：表锁 &gt; 行锁<br>​    冲突概率：表锁 &gt; 行锁<br>​    并发性能：表锁 &lt; 行锁</p>
 <p>InnoDB存储引擎支持行锁和表锁（另类的行锁）</p>
-<h1 id="二、MySQL-Innodb锁类型"><a href="#二、MySQL-Innodb锁类型" class="headerlink" title="二、MySQL Innodb锁类型"></a>二、MySQL Innodb锁类型</h1><h2 id="3种类型"><a href="#3种类型" class="headerlink" title="3种类型"></a>3种类型</h2><p><strong>行锁</strong></p>
+<h1 id="MySQL-Innodb锁类型"><a href="#MySQL-Innodb锁类型" class="headerlink" title="MySQL Innodb锁类型"></a>MySQL Innodb锁类型</h1><h2 id="3种类型"><a href="#3种类型" class="headerlink" title="3种类型"></a>3种类型</h2><p><strong>行锁</strong></p>
 <p>​    共享锁（行锁）：Shared Locks</p>
 <p>​    排它锁（行锁）：Exclusive Locks</p>
 <p><strong>表锁</strong></p>
@@ -490,7 +494,7 @@
 <p>下面3种是<strong>行锁的算法</strong></p>
 <p><strong>记录锁</strong> Record Locks<br><strong>间隙锁</strong> Gap Locks<br><strong>临键锁</strong> Next-key Locks</p>
 <p>行锁的算法<a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html" target="_blank" rel="noopener">https://dev.mysql.com/doc/refman/5.7/en/innodb-locking.html</a></p>
-<h1 id="三、共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）"><a href="#三、共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）" class="headerlink" title="三、共享锁（Share Locks）vs 排它锁（Exclusive Locks）"></a>三、共享锁（Share Locks）vs 排它锁（Exclusive Locks）</h1><p><strong>共享锁</strong>:<br>​    又称为读锁，简称<strong>S</strong>锁，顾名思义，共享锁就是多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改;</p>
+<h1 id="共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）"><a href="#共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）" class="headerlink" title="共享锁（Share Locks）vs 排它锁（Exclusive Locks）"></a>共享锁（Share Locks）vs 排它锁（Exclusive Locks）</h1><p><strong>共享锁</strong>:<br>​    又称为读锁，简称<strong>S</strong>锁，顾名思义，共享锁就是多个事务对于同一数据可以共享一把锁，都能访问到数据，但是只能读不能修改;</p>
 <p>加锁释锁方式：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select * from users WHERE id=1 LOCK IN SHARE MODE;</span><br><span class="line">commit/rollback</span><br></pre></td></tr></table></figure>
 <p>实例测试Share Locks</p>
@@ -544,7 +548,7 @@
 <p><img src="/2018/12/09/MySQL锁/1544454798410.png" alt="1544454798410"></p>
 <p>where 条件在seven 的id =4 ，阻塞了</p>
 <p><img src="/2018/12/09/MySQL锁/1544455038483.png" alt="1544455038483"></p>
-<h1 id="四、意向共享锁（IS）-amp-意向排他锁"><a href="#四、意向共享锁（IS）-amp-意向排他锁" class="headerlink" title="四、意向共享锁（IS）&amp; 意向排他锁"></a>四、意向共享锁（IS）&amp; 意向排他锁</h1><p><strong>意向共享锁(IS)</strong></p>
+<h1 id="意向共享锁（IS）-amp-意向排他锁"><a href="#意向共享锁（IS）-amp-意向排他锁" class="headerlink" title="意向共享锁（IS）&amp; 意向排他锁"></a>意向共享锁（IS）&amp; 意向排他锁</h1><p><strong>意向共享锁(IS)</strong></p>
 <p>​    表示事务准备给数据行加入共享锁，即一个数据行加共享锁前必须先取得该表的IS锁，意向共享锁之间是可以相互兼容的</p>
 <p><strong>意向排它锁(IX)</strong></p>
 <p>​    表示事务准备给数据行加入排他锁，即一个数据行加排他锁前必须先取得该表的IX锁，意向排它锁之间是可以相互兼容的</p>
@@ -554,10 +558,10 @@
 <p>​    一节火车车厢上的卫生间WC会有一个指示灯，提示<strong>有人、无人</strong>，其他乘客只需要通过指示灯可以判断卫生间能否进入，获取使用权。这个指示灯就相当于意向锁，只是一个标识。</p>
 <p>​    乘客要获取使用权卫生间，不用进入卫生间查看是否有人，只需要看指示灯就行了。</p>
 <p>​    事务要获取一个数据行的锁，不用获取共享锁/排它锁，只需要获取意向锁锁就行了。</p>
-<h1 id="五、自增锁-AUTO-INC-Locks"><a href="#五、自增锁-AUTO-INC-Locks" class="headerlink" title="五、自增锁 AUTO-INC Locks"></a>五、自增锁 AUTO-INC Locks</h1><p>针对自增列自增长的一个特殊的表级别锁</p>
+<h1 id="自增锁-AUTO-INC-Locks"><a href="#自增锁-AUTO-INC-Locks" class="headerlink" title="自增锁 AUTO-INC Locks"></a>自增锁 AUTO-INC Locks</h1><p>针对自增列自增长的一个特殊的表级别锁</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show variables like &apos;innodb_autoinc_lock_mode&apos;;</span><br><span class="line">+--------------------------+-------+</span><br><span class="line">| Variable_name            | Value |</span><br><span class="line">+--------------------------+-------+</span><br><span class="line">| innodb_autoinc_lock_mode | 1     |</span><br><span class="line">+--------------------------+-------+</span><br><span class="line">1 row in set (0.00 sec)</span><br></pre></td></tr></table></figure>
 <p>默认取值1，步长为1，代表连续，事务未提交ID永久丢失</p>
-<h1 id="六、临键锁（Next-key）-amp-间隙锁（Gap）-amp-记录锁（Record）"><a href="#六、临键锁（Next-key）-amp-间隙锁（Gap）-amp-记录锁（Record）" class="headerlink" title="六、临键锁（Next-key）&amp;间隙锁（Gap）&amp;记录锁（Record）"></a>六、临键锁（Next-key）&amp;间隙锁（Gap）&amp;记录锁（Record）</h1><p><code>Gap locks</code>：<br>​    <strong>锁住数据不存在的区间（左开右开）</strong><br>​    当sql执行按照索引进行数据的检索时，查询条件的数据不存在，这时SQL语句加上的锁即为Gap locks，锁住索引不存在的区间（左开右开）<br><code>Record locks</code>：<br>​    <strong>锁住具体的索引项</strong><br>​    当sql执行按照唯一性（Primary key、Unique key）索引进行数据的检索时，查询条件等值匹配且查询的数据是存在，这时SQL语句加上的锁即为记录锁Record locks，锁住具体的索引项</p>
+<h1 id="临键锁（Next-key）-amp-间隙锁（Gap）-amp-记录锁（Record）"><a href="#临键锁（Next-key）-amp-间隙锁（Gap）-amp-记录锁（Record）" class="headerlink" title="临键锁（Next-key）&amp;间隙锁（Gap）&amp;记录锁（Record）"></a>临键锁（Next-key）&amp;间隙锁（Gap）&amp;记录锁（Record）</h1><p><code>Gap locks</code>：<br>​    <strong>锁住数据不存在的区间（左开右开）</strong><br>​    当sql执行按照索引进行数据的检索时，查询条件的数据不存在，这时SQL语句加上的锁即为Gap locks，锁住索引不存在的区间（左开右开）<br><code>Record locks</code>：<br>​    <strong>锁住具体的索引项</strong><br>​    当sql执行按照唯一性（Primary key、Unique key）索引进行数据的检索时，查询条件等值匹配且查询的数据是存在，这时SQL语句加上的锁即为记录锁Record locks，锁住具体的索引项</p>
 <p>下面结合实例详细介绍</p>
 <p>数据准备，比如数据库中有一个表t,表结构和数据如下：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; desc t;</span><br><span class="line">+-------+---------+------+-----+---------+----------------+</span><br><span class="line">| Field | Type    | Null | Key | Default | Extra          |</span><br><span class="line">+-------+---------+------+-----+---------+----------------+</span><br><span class="line">| id    | int(11) | NO   | PRI | NULL    | auto_increment |</span><br><span class="line">| value | int(11) | NO   |     | NULL    |                |</span><br><span class="line">+-------+---------+------+-----+---------+----------------+</span><br><span class="line">2 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">mysql&gt; select * from t;</span><br><span class="line">+----+-------+</span><br><span class="line">| id | value |</span><br><span class="line">+----+-------+</span><br><span class="line">|  1 |     1 |</span><br><span class="line">|  4 |     7 |</span><br><span class="line">|  7 |     7 |</span><br><span class="line">| 10 |    10 |</span><br><span class="line">+----+-------+</span><br><span class="line">4 rows in set (0.00 sec)</span><br></pre></td></tr></table></figure>
@@ -568,10 +572,10 @@
 <h2 id="间隙锁（Gap）"><a href="#间隙锁（Gap）" class="headerlink" title="间隙锁（Gap）"></a>间隙锁（Gap）</h2><p><img src="/2018/12/09/MySQL锁/120910194139079.Png" alt="120910194139079"></p>
 <p>Gap只在<strong>RR</strong>事务隔离级别存在</p>
 <h2 id="记录锁（Record）"><a href="#记录锁（Record）" class="headerlink" title="记录锁（Record）"></a>记录锁（Record）</h2><p><img src="/2018/12/09/MySQL锁/120910194139083.Png" alt="120910194139083"></p>
-<h1 id="七、怎么利用锁解决脏读、不可重复读、幻读"><a href="#七、怎么利用锁解决脏读、不可重复读、幻读" class="headerlink" title="七、怎么利用锁解决脏读、不可重复读、幻读"></a>七、怎么利用锁解决脏读、不可重复读、幻读</h1><p><img src="/2018/12/09/MySQL锁/120910194139087.Png" alt="120910194139087"></p>
+<h1 id="怎么利用锁解决脏读、不可重复读、幻读"><a href="#怎么利用锁解决脏读、不可重复读、幻读" class="headerlink" title="怎么利用锁解决脏读、不可重复读、幻读"></a>怎么利用锁解决脏读、不可重复读、幻读</h1><p><img src="/2018/12/09/MySQL锁/120910194139087.Png" alt="120910194139087"></p>
 <p><img src="/2018/12/09/MySQL锁/120910194139091.Png" alt="120910194139091"></p>
 <p><img src="/2018/12/09/MySQL锁/120910194139095.Png" alt="120910194139095"></p>
-<h1 id="八、死锁介绍"><a href="#八、死锁介绍" class="headerlink" title="八、死锁介绍"></a>八、死锁介绍</h1><p>多个并发事务（2个或者以上）；</p>
+<h1 id="死锁介绍"><a href="#死锁介绍" class="headerlink" title="死锁介绍"></a>死锁介绍</h1><p>多个并发事务（2个或者以上）；</p>
 <p>每个事务都持有锁（或者是已经在等待锁）;</p>
 <p>每个事务都需要再继续持有锁；</p>
 <p>事务之间产生加锁的循环等待，形成死锁。</p>
@@ -593,13 +597,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -744,9 +777,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -757,7 +790,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -828,7 +861,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#一、理解表锁、行锁"><span class="nav-text">一、理解表锁、行锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、MySQL-Innodb锁类型"><span class="nav-text">二、MySQL Innodb锁类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3种类型"><span class="nav-text">3种类型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）"><span class="nav-text">三、共享锁（Share Locks）vs 排它锁（Exclusive Locks）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb到底锁了什么？"><span class="nav-text">Innodb到底锁了什么？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、意向共享锁（IS）-amp-意向排他锁"><span class="nav-text">四、意向共享锁（IS）&amp; 意向排他锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五、自增锁-AUTO-INC-Locks"><span class="nav-text">五、自增锁 AUTO-INC Locks</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#六、临键锁（Next-key）-amp-间隙锁（Gap）-amp-记录锁（Record）"><span class="nav-text">六、临键锁（Next-key）&amp;间隙锁（Gap）&amp;记录锁（Record）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#临键锁（Next-key）"><span class="nav-text">临键锁（Next-key）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#间隙锁（Gap）"><span class="nav-text">间隙锁（Gap）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#记录锁（Record）"><span class="nav-text">记录锁（Record）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#七、怎么利用锁解决脏读、不可重复读、幻读"><span class="nav-text">七、怎么利用锁解决脏读、不可重复读、幻读</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#八、死锁介绍"><span class="nav-text">八、死锁介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#死锁如何避免"><span class="nav-text">死锁如何避免</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#理解表锁、行锁"><span class="nav-text">理解表锁、行锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#MySQL-Innodb锁类型"><span class="nav-text">MySQL Innodb锁类型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3种类型"><span class="nav-text">3种类型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#共享锁（Share-Locks）vs-排它锁（Exclusive-Locks）"><span class="nav-text">共享锁（Share Locks）vs 排它锁（Exclusive Locks）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Innodb到底锁了什么？"><span class="nav-text">Innodb到底锁了什么？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#意向共享锁（IS）-amp-意向排他锁"><span class="nav-text">意向共享锁（IS）&amp; 意向排他锁</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自增锁-AUTO-INC-Locks"><span class="nav-text">自增锁 AUTO-INC Locks</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#临键锁（Next-key）-amp-间隙锁（Gap）-amp-记录锁（Record）"><span class="nav-text">临键锁（Next-key）&amp;间隙锁（Gap）&amp;记录锁（Record）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#临键锁（Next-key）"><span class="nav-text">临键锁（Next-key）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#间隙锁（Gap）"><span class="nav-text">间隙锁（Gap）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#记录锁（Record）"><span class="nav-text">记录锁（Record）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#怎么利用锁解决脏读、不可重复读、幻读"><span class="nav-text">怎么利用锁解决脏读、不可重复读、幻读</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#死锁介绍"><span class="nav-text">死锁介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#死锁如何避免"><span class="nav-text">死锁如何避免</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -852,7 +885,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>

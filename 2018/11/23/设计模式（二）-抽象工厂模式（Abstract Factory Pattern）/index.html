@@ -111,10 +111,10 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="设计模式（二）--抽象工厂模式（Abstract Factory Pattern）">
 <meta property="og:url" content="http://bolg.yanzhaoyao.top/2018/11/23/设计模式（二）-抽象工厂模式（Abstract Factory Pattern）/index.html">
-<meta property="og:site_name" content="YShine&#39;s Bolg">
+<meta property="og:site_name" content="Luxey&#39;s Space">
 <meta property="og:description" content="抽象工厂模式抽象工厂模式（Abstract Factory Pattern）是围绕一个超级工厂创建其他工厂。该超级工厂又称为其他工厂的工厂。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在抽象工厂模式中，接口是负责创建一个相关对象的工厂，不需要显式指定它们的类。每个生成的工厂都能按照工厂模式提供对象。 介绍意图：提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-11-30T12:32:34.814Z">
+<meta property="og:updated_time" content="2018-12-13T15:06:30.891Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="设计模式（二）--抽象工厂模式（Abstract Factory Pattern）">
 <meta name="twitter:description" content="抽象工厂模式抽象工厂模式（Abstract Factory Pattern）是围绕一个超级工厂创建其他工厂。该超级工厂又称为其他工厂的工厂。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。 在抽象工厂模式中，接口是负责创建一个相关对象的工厂，不需要显式指定它们的类。每个生成的工厂都能按照工厂模式提供对象。 介绍意图：提供一个创建一系列相关或相互依赖对象的接口，而无需指定它们具体的">
@@ -153,7 +153,7 @@
 
 
 
-  <title>设计模式（二）--抽象工厂模式（Abstract Factory Pattern） | YShine's Bolg</title>
+  <title>设计模式（二）--抽象工厂模式（Abstract Factory Pattern） | Luxey's Space</title>
   
 
 
@@ -197,12 +197,12 @@
     <div class="custom-logo-site-title">
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">YShine's Bolg</span>
+        <span class="site-title">Luxey's Space</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
       
-        <p class="site-subtitle">再努力一点，活成自己想要的</p>
+        <p class="site-subtitle">再努力一点</p>
       
   </div>
 
@@ -329,13 +329,13 @@
     <link itemprop="mainEntityOfPage" href="http://bolg.yanzhaoyao.top/2018/11/23/设计模式（二）-抽象工厂模式（Abstract Factory Pattern）/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="YShine">
+      <meta itemprop="name" content="Luxey">
       <meta itemprop="description" content="">
       <meta itemprop="image" content="/img/avatar/default.png">
     </span>
 
     <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="YShine's Bolg">
+      <meta itemprop="name" content="Luxey's Space">
     </span>
 
     
@@ -499,7 +499,7 @@
 <p><strong>AbstractFactoryPatternDemo.java</strong></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractFactoryPatternDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//获取一个手机工厂</span></span><br><span class="line">        AbstractFactory phoneFactory = FactoryProducer.getFactory(<span class="string">"phone"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone iphone = phoneFactory.getPhone(<span class="string">"iphone"</span>);</span><br><span class="line">        iphone.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone huawei = phoneFactory.getPhone(<span class="string">"huawei"</span>);</span><br><span class="line">        huawei.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhone vivo = phoneFactory.getPhone(<span class="string">"vivo"</span>);</span><br><span class="line">        vivo.publish();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取一个手机壳工厂</span></span><br><span class="line">        AbstractFactory phoneShellFactory = FactoryProducer.getFactory(<span class="string">"phoneshell"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取iphone对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhoneShell phoneShell = phoneShellFactory.getPhoneShell(<span class="string">"red"</span>);</span><br><span class="line">        phoneShell.color();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhoneShell green = phoneShellFactory.getPhoneShell(<span class="string">"green"</span>);</span><br><span class="line">        green.color();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取huawei对象，并发布手机publish（）</span></span><br><span class="line">        IMobilePhoneShell blue = phoneShellFactory.getPhoneShell(<span class="string">"blue"</span>);</span><br><span class="line">        blue.color();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="步骤-9"><a href="#步骤-9" class="headerlink" title="步骤 9"></a>步骤 9</h3><p>执行程序，输出结果：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate 20</span><br><span class="line">发布：vivo X23</span><br><span class="line">红色手机壳</span><br><span class="line">绿色手机壳</span><br><span class="line">蓝色手机壳</span><br></pre></td></tr></table></figure>
+<figure class="highlight lsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">发布：Iphone XS</span><br><span class="line">发布：HUAWEI Mate <span class="number">20</span></span><br><span class="line">发布：vivo X23</span><br><span class="line">红色手机壳</span><br><span class="line">绿色手机壳</span><br><span class="line">蓝色手机壳</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -510,13 +510,42 @@
     
 
     
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>赞赏一杯咖啡</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/img/wechatpay.png" alt="Luxey 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/img/alipay.png" alt="Luxey 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
 
     
       <div>
         <ul class="post-copyright">
   <li class="post-copyright-author">
     <strong>本文作者：</strong>
-    YShine
+    Luxey
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
@@ -643,9 +672,9 @@
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
-              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="YShine">
+              <img class="site-author-image" itemprop="image" src="/img/avatar/default.png" alt="Luxey">
             
-              <p class="site-author-name" itemprop="name">YShine</p>
+              <p class="site-author-name" itemprop="name">Luxey</p>
               <p class="site-description motion-element" itemprop="description">人生能有几次博、此时不博何时博</p>
           </div>
 
@@ -656,7 +685,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -751,7 +780,7 @@
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">YShine</span>
+  <span class="author" itemprop="copyrightHolder">Luxey</span>
 
   
 </div>
